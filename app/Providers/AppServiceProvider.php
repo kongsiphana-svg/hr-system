@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated; // Add this line!
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Force the default guest/RedirectIfAuthenticated redirect to the login page
+        RedirectIfAuthenticated::redirectUsing(function () {
+            return route('login');
+        });
     }
 }
