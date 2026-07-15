@@ -79,7 +79,7 @@
                                 <p class="font-body-sm text-error mt-1 text-center">{{ $message }}</p>
                             @enderror
                             <p class="mt-2 font-body-sm text-secondary text-center">
-                                PNG, JPG, or JPEG only. Optional — leave blank to show initials instead.
+                                PNG, JPG, or JPEG only. 
                             </p>
                         </div>
                     </div>
@@ -97,7 +97,7 @@
                                     class="w-full border @error('first_name') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="first_name"
                                     name="first_name"
-                                    placeholder="e.g. Johnathan"
+                                    placeholder="e.g. Tevy"
                                     type="text"
                                     value="{{ old('first_name', $old['first_name'] ?? '') }}"
                                     required
@@ -115,7 +115,7 @@
                                     class="w-full border @error('last_name') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="last_name"
                                     name="last_name"
-                                    placeholder="e.g. Doe"
+                                    placeholder="e.g. Sok"
                                     type="text"
                                     value="{{ old('last_name', $old['last_name'] ?? '') }}"
                                     required
@@ -170,7 +170,7 @@
                                     class="w-full border @error('nationality') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="nationality"
                                     name="nationality"
-                                    placeholder="e.g. American"
+                                    placeholder="e.g. Cambodian"
                                     type="text"
                                     value="{{ old('nationality', $old['nationality'] ?? '') }}"
                                     required
@@ -213,33 +213,7 @@
             </div>
         </form>
 
-        {{-- Helper Cards --}}
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="col-span-1 md:col-span-2 bg-primary-container/10 border border-primary-container/20 rounded-lg p-6 flex gap-4">
-                <span class="material-symbols-outlined text-primary-container">info</span>
-                <div>
-                    <h4 class="font-title-lg text-on-primary-fixed-variant mb-1">Onboarding Tip</h4>
-                    <p class="font-body-sm text-on-secondary-container">Please ensure the legal name and identification details match official government documents to avoid issues with payroll and tax documentation in later steps.</p>
-                </div>
-            </div>
-            <div class="bg-secondary-container/10 border border-secondary-container/20 rounded-lg p-6">
-                <h4 class="font-label-md text-on-secondary-container mb-2 uppercase tracking-wider">Required Steps</h4>
-                <ul class="space-y-2">
-                    <li class="flex items-center gap-2 font-body-sm text-secondary">
-                        <span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
-                        Personal Information
-                    </li>
-                    <li class="flex items-center gap-2 font-body-sm text-secondary/60">
-                        <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
-                        Contact Details
-                    </li>
-                    <li class="flex items-center gap-2 font-body-sm text-secondary/60">
-                        <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
-                        Job Details
-                    </li>
-                </ul>
-            </div>
-        </div>
+     
     </div>
 </main>
 

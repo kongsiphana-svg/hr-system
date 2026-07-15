@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
@@ -72,8 +71,7 @@ class EmployeeController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $data['avatar_url'] = Storage::url($path);
+            $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
         }
 
         unset($data['avatar']);
@@ -231,8 +229,7 @@ class EmployeeController extends Controller
         $data = $this->validated($request, $employee);
 
         if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $data['avatar_url'] = Storage::url($path);
+            $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
         }
 
         unset($data['avatar']);
@@ -331,6 +328,26 @@ class EmployeeController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->string('status'));
             });
+    }
+
+    /**
+     * Save an uploaded avatar directly into public/uploads/avatars and
+     * return its public URL. Deliberately avoids the storage:link symlink
+     * approach, since some Nginx configs refuse to follow it (500 error).
+     */
+    protected function storeAvatar(\Illuminate\Http\UploadedFile $file): string
+    {
+        $directory = public_path('uploads/avatars');
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = uniqid('avatar_') . '.' . $file->getClientOriginalExtension();
+
+        $file->move($directory, $filename);
+
+        return asset('uploads/avatars/' . $filename);
     }
 
     /**
