@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -19,7 +19,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatar', // Added
+        'google_id',
+        'avatar',
     ];
     
     /** @use HasFactory<UserFactory> */
@@ -42,12 +43,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class);
     }
-        public function getRouteKeyName()
+
+    public function getRouteKeyName()
     {
         return 'name';
     }
+
     public function leaveRequests()
-{
-    return $this->hasMany(LeaveRequest::class);
-}
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
 }

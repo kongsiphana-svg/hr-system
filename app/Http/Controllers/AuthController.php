@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -74,5 +75,39 @@ class AuthController extends Controller
 
         // 4. Send them back to the login page after logging out
         return redirect()->route('login')->with('success', 'You have been successfully logged out.');
+    }
+
+    // --- GOOGLE LOGIN ---
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        $user = User::where('google_id', $googleUser->getId())
+            ->orWhere('email', $googleUser->getEmail())
+            ->first();
+
+        if ($user) {
+            $user->update([
+                'google_id' => $googleUser->getId(),
+                'name' => $user->name ?: $googleUser->getName(),
+            ]);
+        } else {
+            $user = User::create([
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'password' => null,
+            ]);
+        }
+
+        Auth::login($user, true);
+
+        return redirect()->intended(route('dashboard'));
     }
 }
