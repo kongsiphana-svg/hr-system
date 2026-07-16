@@ -46,5 +46,8 @@ class User extends Authenticatable
     {
         return 'name';
     }
+    public function leaveRequests()
+{
+    return $this->hasMany(LeaveRequest::class);
 }
-
+}
