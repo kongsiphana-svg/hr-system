@@ -3,6 +3,7 @@
 use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 <<<<<<< HEAD
+<<<<<<< HEAD
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveRequestController;
@@ -62,14 +63,26 @@ Route::middleware(['auth'])->group(function () {
 });
 =======
 use App\Http\Controllers\PayrollPageController;
+=======
+use App\Http\Controllers\ScheduleController;
+>>>>>>> origin/feat/be-schedule-phanna
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+<<<<<<< HEAD
 Route::get('/payroll', [PayrollPageController::class, 'index'])->name('payroll.index');
 
 Route::get('/payroll/process', function () {
     return view('Payroll.process');
 })->name('payroll.process');
 >>>>>>> origin/feat/be-payroll-phanna
+=======
+Route::get('/schedules', [ScheduleController::class, 'index']);
+Route::post('/schedules', [ScheduleController::class, 'store']);
+Route::get('/schedules/{schedule}', [ScheduleController::class, 'show']);
+Route::put('/schedules/{schedule}', [ScheduleController::class, 'update']);
+Route::patch('/schedules/{schedule}', [ScheduleController::class, 'update']);
+Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
+>>>>>>> origin/feat/be-schedule-phanna
