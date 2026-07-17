@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HR Portal - Employee Schedule</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-colors">
+    /* Custom brand colors to match the screenshot precisely */
+    :root {
+      --sidebar-bg: #1e2532;
+      --sidebar-active: #2d3648;
+      --app-bg: #f3f5f9;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-muted: #64748b;
+      --primary-blue: #3b82f6;
+      --shift-blue: #dbeafe;
+      --shift-blue-border: #3b82f6;
+      --shift-green: #dcfce7;
+      --shift-green-border: #22c55e;
+      --shift-purple: #f3e8ff;
+      --shift-purple-border: #a855f7;
+      --shift-orange: #ffedd5;
+      --shift-orange-border: #f97316;
+    }
+  </style>
+<style data-purpose="layout-tweaks">
+    /* Ensuring full height for the sidebar layout */
+    body, html {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+    }
+  </style>
+</head>
+<body class="bg-[#f3f5f9] flex h-screen">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-64 bg-[#1e2532] text-white flex flex-col shrink-0" data-purpose="sidebar-navigation">
+<div class="p-6 border-b border-slate-700">
+<h1 class="text-xl font-bold">HR Portal</h1>
+<p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-1">Admin Console</p>
+</div>
+<nav class="flex-1 mt-4 px-3 space-y-1 overflow-y-auto">
+<a class="flex items-center px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Dashboard
+      </a>
+<a class="flex items-center px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Employees
+      </a>
+<a class="flex items-center px-3 py-2 text-sm font-medium text-white bg-[#2d3648] rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Schedule
+      </a>
+<a class="flex items-center px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Payroll
+      </a>
+<a class="flex items-center px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Leave Requests
+      </a>
+<a class="flex items-center px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 rounded-lg group" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Settings
+      </a>
+</nav>
+<div class="p-4 border-t border-slate-700">
+<button class="w-full flex items-center justify-center py-2 text-sm font-semibold bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 transition-colors">
+<span class="mr-2 text-xl leading-none">+</span> New Request
+      </button>
+<a class="mt-6 flex items-center text-sm font-medium text-slate-400 hover:text-white px-2" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Logout
+      </a>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex flex-col overflow-hidden relative">
+<!-- BEGIN: Header -->
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center w-1/3">
+<div class="relative w-full max-w-sm">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-md leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-0 sm:text-sm" placeholder="Search employees, shifts..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<button class="text-slate-400 hover:text-slate-600 relative">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+</button>
+<button class="text-slate-400 hover:text-slate-600">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="h-8 w-px bg-slate-200"></div>
+<div class="flex items-center space-x-3">
+<div class="text-right">
+<p class="text-xs font-bold text-slate-800">Admin Panel</p>
+<p class="text-[10px] text-slate-500">Super User</p>
+</div>
+<img alt="Admin Avatar" class="h-9 w-9 rounded-full object-cover border border-slate-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxe0FbpmAGUUAKF5qgKS3GtU6evJvO91m4ty5xci6mPnWx5gIC_zW1DSFO7_x9duv7XxMlAPJbNA3sbrc_Zjsygc0HoCWKwp4MLwczFp8q-Hr3XxZaYk18eyeXEE85cO9UGcMlucvyKC2b5FLXxXovemVRyXU7orEPElw3BmC7bR7dpifIPDNgpdIyKDkjDY14lmg-ZgN9FE3gMkuEYbeqfUch1eOEMUYinM_eNvRLX6kcvmVFiuE5Qb3OZO3rKl7UvdbiEu5x59g"/>
+</div>
+</div>
+</header>
+<!-- END: Header -->
+<!-- BEGIN: DashboardBody -->
+<div class="flex-1 overflow-y-auto p-8">
+<!-- Title Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-bold text-slate-800">Employee Schedule</h2>
+<p class="text-slate-500 mt-1">Manage weekly shifts and department coverage</p>
+</div>
+<div class="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+<button class="px-4 py-1.5 text-xs font-semibold bg-blue-50 text-blue-600 rounded-md">Weekly</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700">Monthly</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700">Daily</button>
+</div>
+</div>
+<!-- BEGIN: ScheduleGrid -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8" data-purpose="main-schedule-table">
+<div class="grid grid-cols-8 border-b border-slate-100 bg-slate-50">
+<div class="p-4 text-xs font-bold text-slate-500 border-r border-slate-100">Employee</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Mon</p>
+<p class="text-xs font-bold text-slate-700">Oct 23</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Tue</p>
+<p class="text-xs font-bold text-slate-700">Oct 24</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Wed</p>
+<p class="text-xs font-bold text-slate-700">Oct 25</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Thu</p>
+<p class="text-xs font-bold text-slate-700">Oct 26</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Fri</p>
+<p class="text-xs font-bold text-slate-700">Oct 27</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Sat</p>
+<p class="text-xs font-bold text-slate-700">Oct 28</p>
+</div>
+<div class="p-4 text-center">
+<p class="text-[10px] uppercase text-slate-400 font-bold">Sun</p>
+<p class="text-xs font-bold text-slate-700">Oct 29</p>
+</div>
+</div>
+<!-- Alex Rivera Row -->
+<div class="grid grid-cols-8 border-b border-slate-100 min-h-[90px]">
+<div class="p-4 flex items-center space-x-3 border-r border-slate-100">
+<img alt="Alex Rivera" class="h-10 w-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCytTY3uAukimRVf1eIfYjlt_Q9XBj3A4GokZa4oRjJQHqmx38tiMMmQo2EPLrOF-Fn2FCpx8v0gKS1bdmdqSyAF55YWzE4dWvQuEBt0XXBU4thfF034La2lOVeI9LdNVlzri-WdW8Njve2ZIdATBNrU1R1urNe3b6wzriQAui1hy96sm0rysR-GrqNHdNKAAxTTVHtfj6H7iN7COw_y6kgf8msCF4ki38IIEE_xTrDSHoL6XS3MBMm3YfcEnT4XWjGSzE42qrTQyk"/>
+<div>
+<p class="text-xs font-bold text-slate-800">Alex Rivera</p>
+<p class="text-[10px] text-slate-400">Engineering</p>
+</div>
+</div>
+<div class="p-2 col-span-2">
+<!-- Space for Mon/Tue -->
+</div>
+<div class="p-2">
+<div class="h-full bg-blue-50 border-l-4 border-blue-500 rounded-r-md p-2 flex flex-col justify-center">
+<span class="text-[10px] font-bold text-blue-800">09:00 - 17:00</span>
+</div>
+</div>
+<div class="col-span-4"></div>
+</div>
+<!-- Sarah Chen Row -->
+<div class="grid grid-cols-8 border-b border-slate-100 min-h-[90px]">
+<div class="p-4 flex items-center space-x-3 border-r border-slate-100">
+<img alt="Sarah Chen" class="h-10 w-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9yzRmgvqYhVMYXvr8CsM5P0WxAhqiNvCLIPBGcjEvF_INYplhkTZyzNO0X1pMR3UMXBvw7FO5Ndr6cQq36Th3qPoB2dZrXUcvVFGvtou8r8YXa9P97lAy1oMCtuNvu_Zgx3b1KBTgaADudO0PWABHiurqMetLPsAEjL2A0jzJe864asPAie9JEtCnD8sHfsbKLl16WNNxEDWOsKInA9V5mvKSX2Ki6vlv8IEOzB3LncwasT4ckPDoyu2Zr-F6aGbbMF3QJw3ZJ90"/>
+<div>
+<p class="text-xs font-bold text-slate-800">Sarah Chen</p>
+<p class="text-[10px] text-slate-400">Operations</p>
+</div>
+</div>
+<div class="col-span-2"></div>
+<div class="p-2">
+<div class="h-full bg-green-50 border-l-4 border-green-500 rounded-r-md p-2 flex flex-col justify-center">
+<span class="text-[10px] font-bold text-green-800">08:00 - 16:00</span>
+</div>
+</div>
+<div class="col-span-4"></div>
+</div>
+<!-- Jordan Smith Row -->
+<div class="grid grid-cols-8 min-h-[90px]">
+<div class="p-4 flex items-center space-x-3 border-r border-slate-100">
+<img alt="Jordan Smith" class="h-10 w-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2XpSPDsJDQ8182SUxUkyansThJCyQCahLD4RLU43qYRewjYDVWco4j6GuM4fPiFkheW7n7Ub0Nsp6bAnbJtZ3AYmjcjDykojw79S61ncAWO0seUdjO1_NAHX4hmUFZDXsW0vwdc7BWrlmZjS71rYKBCHjr_TXqK5DwJy_oxfXrqcM48gjG-KnJ8oAgIulvz8mdju3Cqp-z4xUeRa3CEUor-4Cd0okk1HKZ5tVVC7FG2WBMTXYtq3uPF7UHt3tN9NlnhXjSIwNaFk"/>
+<div>
+<p class="text-xs font-bold text-slate-800">Jordan Smith</p>
+<p class="text-[10px] text-slate-400">Support</p>
+</div>
+</div>
+<div class="col-span-2"></div>
+<div class="p-2">
+<div class="h-full bg-purple-50 border-l-4 border-purple-500 rounded-r-md p-2 flex flex-col justify-center">
+<span class="text-[10px] font-bold text-purple-800">14:00 - 22:00</span>
+</div>
+</div>
+<div class="p-2">
+<div class="h-full bg-orange-50 border-l-4 border-orange-500 rounded-r-md p-2 flex flex-col justify-center">
+<span class="text-[10px] font-bold text-orange-800">10:00 - 18:00</span>
+<span class="text-[8px] text-orange-600 font-medium">Weekend OT</span>
+</div>
+</div>
+<div class="col-span-3"></div>
+</div>
+</div>
+<!-- END: ScheduleGrid -->
+<!-- Widgets Row -->
+<div class="grid grid-cols-2 gap-8">
+<!-- BEGIN: DeptCoverage -->
+<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+<h3 class="text-sm font-bold text-slate-800 mb-4">Department Coverage</h3>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-[10px] font-bold mb-1">
+<span class="text-slate-500">Engineering</span>
+<span class="text-slate-800">85%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-1.5">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[10px] font-bold mb-1">
+<span class="text-slate-500">Operations</span>
+<span class="text-slate-800">70%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-1.5">
+<div class="bg-green-500 h-1.5 rounded-full" style="width: 70%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[10px] font-bold mb-1">
+<span class="text-slate-500">Support</span>
+<span class="text-slate-800">92%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-1.5">
+<div class="bg-purple-500 h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- END: DeptCoverage -->
+<!-- BEGIN: ColorLegend -->
+<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+<h3 class="text-sm font-bold text-slate-800 mb-4">Shift Color Legend</h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span class="w-3 h-3 bg-blue-500 rounded-sm mr-3"></span> Engineering (Standard)
+            </div>
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span class="w-3 h-3 bg-green-500 rounded-sm mr-3"></span> Operations (Day)
+            </div>
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span class="w-3 h-3 bg-purple-500 rounded-sm mr-3"></span> Support (Late)
+            </div>
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span class="w-3 h-3 bg-orange-500 rounded-sm mr-3"></span> On-Call / Weekend
+            </div>
+</div>
+</div>
+<!-- END: ColorLegend -->
+</div>
+</div>
+<!-- END: DashboardBody -->
+<!-- BEGIN: AddShiftModal -->
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform" data-purpose="modal-container">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">Add New Shift</h3>
+<button class="text-slate-400 hover:text-slate-600">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="p-6 space-y-5">
+<!-- Select Employee -->
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2">Select Employee</label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 appearance-none">
+<option>Alex Rivera</option>
+<option>Sarah Chen</option>
+<option>Jordan Smith</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+<!-- Choose Date -->
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2">Choose Date</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500" type="text" value="10/25/2023"/>
+</div>
+</div>
+<!-- Start/End Time Row -->
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2">Set Start Time</label>
+<input class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500" type="text" value="09:00 AM"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2">Set End Time</label>
+<input class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500" type="text" value="05:00 PM"/>
+</div>
+</div>
+<!-- Shift Type -->
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2">Shift Type</label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 appearance-none">
+<option>Standard</option>
+<option>Overtime</option>
+<option>Night Shift</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex space-x-3">
+<button class="flex-1 px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+<button class="flex-1 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-shadow shadow-md shadow-blue-200">
+            Create Shift
+          </button>
+</div>
+</div>
+</div>
+<!-- END: AddShiftModal -->
+</main>
+<!-- END: MainContent -->
+</body></html>

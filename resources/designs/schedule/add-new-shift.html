@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Shift - HR Portal</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Font Configuration -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="sidebar-styles">
+    /* Custom Sidebar specific styles to match image colors */
+    .sidebar-bg { background-color: #2D3359; }
+    .sidebar-active { background-color: #3F4494; border-left: 4px solid #7C3AED; }
+    .sidebar-hover:hover { background-color: rgba(255, 255, 255, 0.05); }
+  </style>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+<!-- BEGIN: Sidebar -->
+<aside class="sidebar-bg w-64 flex flex-col h-full text-white shrink-0">
+<!-- Header -->
+<div class="p-6">
+<h1 class="text-xl font-bold">HR Portal</h1>
+<p class="text-xs text-gray-400">Global HR Operations</p>
+</div>
+<!-- Navigation -->
+<nav class="flex-grow mt-4 px-2 space-y-1" data-purpose="primary-navigation">
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Dashboard
+      </a>
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Directory
+      </a>
+<a class="sidebar-active flex items-center px-4 py-3 text-sm font-medium rounded-md text-white" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Scheduling
+      </a>
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Payroll
+      </a>
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Leave Requests
+      </a>
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Settings
+      </a>
+</nav>
+<!-- Footer Links -->
+<div class="p-4 border-t border-blue-800" data-purpose="secondary-navigation">
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Help Center
+      </a>
+<a class="sidebar-hover flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300" href="#">
+<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Logout
+      </a>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- Main Content Wrapper -->
+<main class="flex-grow flex flex-col h-full overflow-hidden bg-gray-50">
+<!-- BEGIN: Top Bar -->
+<header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+<div class="flex items-center gap-8 w-full max-w-4xl">
+<h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">HR Management System</h2>
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="block w-full bg-gray-100 border-none rounded-md py-2 pl-10 pr-3 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Search globally..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 text-gray-500">
+<button class="p-1 hover:bg-gray-100 rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="p-1 hover:bg-gray-100 rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="p-1 hover:bg-gray-100 rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-gray-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb-TujVx5oCcLYEhUTec5EEfy_wdye_Fbs9-vldYPtAKhpG5rz3CBzAGaWCzDzv8o6vT7XxhhNNoeYVBgZpFpCVhas4sDdVSfWcSGgWvBJ9cb0Y0amLFQ27fn_JcfEfYQ-Kx9En1eIWHefSno8NXNs8S30yfVhBv3aMtELm6Q6G0l5KZHDWwGLgA2n6yFqs731j6pQ6MNH1czpTxJfRlDKY25oXIiF6pfwUeCt02yYnJIoQy2h2N_7d7Hd17yVSDQhoBWoqJ6_yvrA"/>
+</div>
+</header>
+<!-- END: Top Bar -->
+<!-- BEGIN: Main Page Content -->
+<div class="flex-grow overflow-y-auto p-8" data-purpose="form-container">
+<!-- Breadcrumbs and Header -->
+<div class="mb-8">
+<nav class="flex text-xs text-gray-500 font-medium mb-2">
+<a class="hover:text-blue-600" href="#">Scheduling</a>
+<span class="mx-2">/</span>
+<span class="text-gray-800">Add New Shift</span>
+</nav>
+<div class="flex justify-between items-baseline">
+<h2 class="text-2xl font-bold text-gray-900">Add New Shift</h2>
+<span class="text-xs text-gray-500 font-medium uppercase tracking-wider">Step 1 of 2: Shift Configuration</span>
+</div>
+</div>
+<!-- BEGIN: Form Sections -->
+<div class="space-y-6 max-w-6xl mx-auto pb-20">
+<!-- SECTION 1: Employee Assignment -->
+<div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm" data-purpose="section-employee-assignment">
+<div class="flex items-center gap-2 mb-6">
+<svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<h3 class="font-bold text-gray-800">Employee Assignment</h3>
+</div>
+<div class="max-w-4xl">
+<label class="block text-sm font-semibold text-gray-700 mb-2">Select Employee</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<select class="block w-full border-gray-300 rounded-md py-2.5 pl-10 pr-10 text-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white">
+<option disabled="" selected="" value="">Search employee by name or ID...</option>
+<option>John Doe (ID: 1024)</option>
+<option>Jane Smith (ID: 1025)</option>
+</select>
+<span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<p class="mt-2 text-xs text-gray-400">Start typing to filter employee list.</p>
+</div>
+</div>
+<!-- SECTION 2: Shift Timing -->
+<div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm" data-purpose="section-shift-timing">
+<div class="flex items-center gap-2 mb-6">
+<svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<h3 class="font-bold text-gray-800">Shift Timing</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+<input class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="mm/dd/yyyy" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Shift Type</label>
+<select class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+<option>Standard (9:00 - 17:00)</option>
+<option>Night Shift (22:00 - 06:00)</option>
+<option>Custom</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Start Time</label>
+<input class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" type="time" value="09:00"/>
+</div>
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">End Time</label>
+<input class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" type="time" value="17:00"/>
+</div>
+</div>
+</div>
+<!-- SECTION 3: Location & Instructions -->
+<div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm" data-purpose="section-location-instructions">
+<div class="flex items-center gap-2 mb-6">
+<svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<h3 class="font-bold text-gray-800">Location &amp; Instructions</h3>
+</div>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Department / Location</label>
+<select class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+<option>Main Office - HQ</option>
+<option>Warehouse A</option>
+<option>Remote</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Additional Notes</label>
+<textarea class="block w-full border-gray-300 rounded-md py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter any specific instructions or handover notes for this shift..." rows="4"></textarea>
+</div>
+</div>
+</div>
+</div>
+<!-- END: Form Sections -->
+</div>
+<!-- END: Main Page Content -->
+<!-- BEGIN: Floating Footer Actions -->
+<footer class="bg-white border-t border-gray-200 p-4 px-8 flex justify-end">
+<button class="bg-[#1E1B4B] hover:bg-[#2D2A6B] text-white px-6 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors shadow-lg" data-purpose="submit-button">
+        Add Shift
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</footer>
+<!-- END: Floating Footer Actions -->
+</main>
+</body></html>
