@@ -89,7 +89,15 @@ Route::patch('/employees/{employee}/deactivate', [EmployeeController::class, 'de
 Route::get('/', function () {
 <<<<<<< HEAD
     return view('welcome');
-});
+})->name('home');
+
+Route::get('/login', function () {
+    return redirect()->route('payroll.index');
+})->name('login');
+
+Route::get('/register', function () {
+    return redirect()->route('payroll.index');
+})->name('register');
 
 <<<<<<< HEAD
 <<<<<<< HEAD

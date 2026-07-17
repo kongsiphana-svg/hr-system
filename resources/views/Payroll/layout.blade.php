@@ -45,7 +45,7 @@
     --}}
     <div
         id="payroll-app"
-        class="flex min-h-screen"
+        class="flex h-screen overflow-hidden"
         data-csrf="{{ csrf_token() }}"
         data-process-url="{{ url('/api/payroll/process') }}"
         data-list-url="{{ url('/api/payroll') }}"
@@ -53,10 +53,10 @@
     >
         @include('Payroll.partials.sidebar')
 
-        <div class="flex min-w-0 flex-1 flex-col">
+        <div class="flex min-h-0 min-w-0 flex-1 flex-col">
             @include('Payroll.partials.topbar')
 
-            <main class="flex-1 overflow-auto px-6 py-8 lg:px-8">
+            <main class="flex-1 overflow-y-auto px-6 py-8 lg:px-8">
                 @yield('content')
             </main>
         </div>

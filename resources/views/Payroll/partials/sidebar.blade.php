@@ -12,7 +12,7 @@
     ];
 @endphp
 
-<aside class="flex w-60 shrink-0 flex-col bg-payroll-sidebar text-white">
+<aside class="flex h-full w-60 shrink-0 flex-col overflow-y-auto bg-payroll-sidebar text-white">
     <div class="px-6 pt-7 pb-8">
         <h1 class="text-lg font-semibold tracking-tight">HR Portal</h1>
         <p class="mt-0.5 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">Admin Console</p>

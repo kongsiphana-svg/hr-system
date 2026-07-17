@@ -1,4 +1,4 @@
-<header class="flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-3.5 lg:px-8">
+<header class="sticky top-0 z-30 flex shrink-0 items-center gap-4 border-b border-slate-200 bg-white px-6 py-3.5 lg:px-8">
     <div class="relative max-w-xl flex-1">
         <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-slate-400">
             @include('Payroll.partials.icons', ['name' => 'search', 'class' => 'h-4 w-4'])
