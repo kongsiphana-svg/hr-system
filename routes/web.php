@@ -92,6 +92,7 @@ Route::get('/', function () {
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Route::get('/payroll', [PayrollPageController::class, 'index'])->name('payroll.index');
 
 Route::get('/payroll/process', function () {
@@ -110,3 +111,7 @@ Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
     return redirect()->route('employees.index');
 });
 >>>>>>> origin/feat/fe-employee-visal
+=======
+Route::view('/leave-requests', 'leave-requests.index')
+    ->name('leave-requests.index');
+>>>>>>> origin/feat/fe-leave-sokheng
