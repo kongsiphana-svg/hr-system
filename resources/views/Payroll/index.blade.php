@@ -3,189 +3,6 @@
 @section('title', 'Payroll Management')
 
 @section('content')
-    @php
-        /**
-         * Demo data — swap for controller/API payload later.
-         * Expected employee fields for backend:
-         * id, employee_id, name, title, department_id, employment_type,
-         * base_salary, hours, allowances, deductions, net_pay
-         */
-        $summary = [
-            ['key' => 'pay_period', 'label' => 'Pay Period', 'value' => 'Oct 01 – Oct 31, 2023', 'hint' => null],
-            ['key' => 'total_gross_pay', 'label' => 'Total Gross Pay', 'value' => '$412,850.00', 'hint' => null],
-            ['key' => 'net_disbursable', 'label' => 'Net Disbursable', 'value' => '$328,140.00', 'hint' => null],
-            ['key' => 'employees_count', 'label' => 'Employees Count', 'value' => '148', 'hint' => '142 active this period'],
-        ];
-
-        $employees = [
-            [
-                'id' => 1,
-                'employee_id' => 1,
-                'name' => 'Jane Doe',
-                'title' => 'Product Designer',
-                'department_id' => 'design',
-                'employment_type' => 'full_time',
-                'initials' => 'JD',
-                'avatar' => 'bg-violet-500',
-                'base_salary' => 8500.00,
-                'hours' => 160,
-                'allowances' => 450.00,
-                'deductions' => 1200.00,
-                'net_pay' => 7750.00,
-            ],
-            [
-                'id' => 2,
-                'employee_id' => 2,
-                'name' => 'Mark Smith',
-                'title' => 'Frontend Engineer',
-                'department_id' => 'engineering',
-                'employment_type' => 'full_time',
-                'initials' => 'MS',
-                'avatar' => 'bg-sky-500',
-                'base_salary' => 7200.00,
-                'hours' => 160,
-                'allowances' => 300.00,
-                'deductions' => 980.00,
-                'net_pay' => 6520.00,
-            ],
-            [
-                'id' => 3,
-                'employee_id' => 3,
-                'name' => 'Amelia Lewis',
-                'title' => 'Marketing Lead',
-                'department_id' => 'marketing',
-                'employment_type' => 'full_time',
-                'initials' => 'AL',
-                'avatar' => 'bg-pink-500',
-                'base_salary' => 9100.00,
-                'hours' => 152,
-                'allowances' => 600.00,
-                'deductions' => 1450.00,
-                'net_pay' => 8250.00,
-            ],
-            [
-                'id' => 4,
-                'employee_id' => 4,
-                'name' => 'Robert Wilson',
-                'title' => 'Backend Engineer',
-                'department_id' => 'engineering',
-                'employment_type' => 'full_time',
-                'initials' => 'RW',
-                'avatar' => 'bg-rose-500',
-                'base_salary' => 8800.00,
-                'hours' => 168,
-                'allowances' => 250.00,
-                'deductions' => 1100.00,
-                'net_pay' => 7950.00,
-            ],
-            [
-                'id' => 5,
-                'employee_id' => 5,
-                'name' => 'Elena Cruz',
-                'title' => 'UX Researcher',
-                'department_id' => 'design',
-                'employment_type' => 'contract',
-                'initials' => 'EC',
-                'avatar' => 'bg-indigo-600',
-                'base_salary' => 6950.00,
-                'hours' => 160,
-                'allowances' => 400.00,
-                'deductions' => 850.00,
-                'net_pay' => 6500.00,
-            ],
-            [
-                'id' => 6,
-                'employee_id' => 6,
-                'name' => 'David Park',
-                'title' => 'DevOps Engineer',
-                'department_id' => 'engineering',
-                'employment_type' => 'full_time',
-                'initials' => 'DP',
-                'avatar' => 'bg-emerald-600',
-                'base_salary' => 8300.00,
-                'hours' => 160,
-                'allowances' => 350.00,
-                'deductions' => 1050.00,
-                'net_pay' => 7600.00,
-            ],
-            [
-                'id' => 7,
-                'employee_id' => 7,
-                'name' => 'Sofia Martinez',
-                'title' => 'HR Specialist',
-                'department_id' => 'hr',
-                'employment_type' => 'full_time',
-                'initials' => 'SM',
-                'avatar' => 'bg-amber-500',
-                'base_salary' => 6400.00,
-                'hours' => 160,
-                'allowances' => 280.00,
-                'deductions' => 920.00,
-                'net_pay' => 5760.00,
-            ],
-            [
-                'id' => 8,
-                'employee_id' => 8,
-                'name' => 'Liam Chen',
-                'title' => 'Data Analyst',
-                'department_id' => 'engineering',
-                'employment_type' => 'part_time',
-                'initials' => 'LC',
-                'avatar' => 'bg-cyan-600',
-                'base_salary' => 7100.00,
-                'hours' => 155,
-                'allowances' => 320.00,
-                'deductions' => 980.00,
-                'net_pay' => 6440.00,
-            ],
-            [
-                'id' => 9,
-                'employee_id' => 9,
-                'name' => 'Nora Abdullah',
-                'title' => 'Finance Manager',
-                'department_id' => 'finance',
-                'employment_type' => 'full_time',
-                'initials' => 'NA',
-                'avatar' => 'bg-teal-600',
-                'base_salary' => 9800.00,
-                'hours' => 160,
-                'allowances' => 500.00,
-                'deductions' => 1600.00,
-                'net_pay' => 8700.00,
-            ],
-            [
-                'id' => 10,
-                'employee_id' => 10,
-                'name' => 'Owen Blake',
-                'title' => 'QA Engineer',
-                'department_id' => 'engineering',
-                'employment_type' => 'full_time',
-                'initials' => 'OB',
-                'avatar' => 'bg-orange-500',
-                'base_salary' => 6800.00,
-                'hours' => 160,
-                'allowances' => 220.00,
-                'deductions' => 860.00,
-                'net_pay' => 6160.00,
-            ],
-        ];
-
-        $money = fn (float $amount): string => '$' . number_format($amount, 2);
-        $departments = [
-            '' => 'All Departments',
-            'design' => 'Design',
-            'engineering' => 'Engineering',
-            'marketing' => 'Marketing',
-            'hr' => 'HR',
-            'finance' => 'Finance',
-        ];
-        $employmentTypes = [
-            '' => 'All Employment Types',
-            'full_time' => 'Full Time',
-            'part_time' => 'Part Time',
-            'contract' => 'Contract',
-        ];
-    @endphp
 
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -250,7 +67,7 @@
             </div>
 
             <div class="flex items-center gap-2 text-sm text-slate-500">
-                <span data-pagination-label>Showing 1–10 of 142 employees</span>
+                <span data-pagination-label>Showing {{ $payrolls->firstItem() ?? 0 }}–{{ $payrolls->lastItem() ?? 0 }} of {{ $payrolls->total() }} employees</span>
                 <input type="hidden" name="page" id="page" value="{{ request('page', 1) }}">
                 <button type="submit" class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" aria-label="Apply filters">
                     @include('Payroll.partials.icons', ['name' => 'filter', 'class' => 'h-4 w-4'])
@@ -306,36 +123,33 @@
         </div>
 
         <div class="flex flex-col items-center gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-between" data-pagination>
+            @php $onFirstPage = $payrolls->currentPage() <= 1; @endphp
             <a
-                href="{{ route('payroll.index', array_merge(request()->query(), ['page' => max(1, (int) request('page', 1) - 1)])) }}"
-                class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 pointer-events-none"
+                href="{{ $onFirstPage ? '#' : route('payroll.index', array_merge(request()->query(), ['page' => $payrolls->currentPage() - 1])) }}"
+                class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium {{ $onFirstPage ? 'text-slate-300 pointer-events-none' : 'text-slate-700 hover:bg-slate-100' }}"
                 data-page-prev
-                aria-disabled="true"
+                @if ($onFirstPage) aria-disabled="true" @endif
             >
                 @include('Payroll.partials.icons', ['name' => 'chevron-left', 'class' => 'h-4 w-4'])
                 Previous
             </a>
 
             <nav class="flex items-center gap-1" aria-label="Pagination">
-                @foreach ([1, 2, 3] as $pageNum)
+                @for ($pageNum = 1; $pageNum <= $payrolls->lastPage(); $pageNum++)
                     <a
                         href="{{ route('payroll.index', array_merge(request()->query(), ['page' => $pageNum])) }}"
-                        class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors {{ (int) request('page', 1) === $pageNum ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors {{ $payrolls->currentPage() === $pageNum ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}"
                         data-page="{{ $pageNum }}"
                     >{{ $pageNum }}</a>
-                @endforeach
-                <span class="px-1 text-sm text-slate-400">…</span>
-                <a
-                    href="{{ route('payroll.index', array_merge(request()->query(), ['page' => 15])) }}"
-                    class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
-                    data-page="15"
-                >15</a>
+                @endfor
             </nav>
 
+            @php $onLastPage = $payrolls->currentPage() >= $payrolls->lastPage(); @endphp
             <a
-                href="{{ route('payroll.index', array_merge(request()->query(), ['page' => (int) request('page', 1) + 1])) }}"
-                class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                href="{{ $onLastPage ? '#' : route('payroll.index', array_merge(request()->query(), ['page' => $payrolls->currentPage() + 1])) }}"
+                class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium {{ $onLastPage ? 'text-slate-300 pointer-events-none' : 'text-slate-700 hover:bg-slate-100' }}"
                 data-page-next
+                @if ($onLastPage) aria-disabled="true" @endif
             >
                 Next
                 @include('Payroll.partials.icons', ['name' => 'chevron-right', 'class' => 'h-4 w-4'])
