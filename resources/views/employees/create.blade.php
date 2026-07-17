@@ -4,9 +4,8 @@
 
 @section('content')
 
-@include('partials.sidebar')
 
-<main class="ml-[260px] pt-12 pb-12 px-margin-desktop min-h-screen">
+<div class="px-margin-desktop pb-12 pt-8">
     <div class="max-w-4xl mx-auto">
 
         {{-- Breadcrumbs & Title --}}
@@ -79,11 +78,7 @@
                                 <p class="font-body-sm text-error mt-1 text-center">{{ $message }}</p>
                             @enderror
                             <p class="mt-2 font-body-sm text-secondary text-center">
-<<<<<<< HEAD
                                 PNG, JPG, or JPEG only. Optional — leave blank to show initials instead.
-=======
-                                PNG, JPG, or JPEG only. 
->>>>>>> origin/feat/fe-employee-visal
                             </p>
                         </div>
                     </div>
@@ -101,11 +96,7 @@
                                     class="w-full border @error('first_name') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="first_name"
                                     name="first_name"
-<<<<<<< HEAD
-                                    placeholder="e.g. Johnathan"
-=======
                                     placeholder="e.g. Tevy"
->>>>>>> origin/feat/fe-employee-visal
                                     type="text"
                                     value="{{ old('first_name', $old['first_name'] ?? '') }}"
                                     required
@@ -123,11 +114,7 @@
                                     class="w-full border @error('last_name') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="last_name"
                                     name="last_name"
-<<<<<<< HEAD
-                                    placeholder="e.g. Doe"
-=======
                                     placeholder="e.g. Sok"
->>>>>>> origin/feat/fe-employee-visal
                                     type="text"
                                     value="{{ old('last_name', $old['last_name'] ?? '') }}"
                                     required
@@ -182,11 +169,7 @@
                                     class="w-full border @error('nationality') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
                                     id="nationality"
                                     name="nationality"
-<<<<<<< HEAD
-                                    placeholder="e.g. American"
-=======
                                     placeholder="e.g. Cambodian"
->>>>>>> origin/feat/fe-employee-visal
                                     type="text"
                                     value="{{ old('nationality', $old['nationality'] ?? '') }}"
                                     required
@@ -229,13 +212,8 @@
             </div>
         </form>
 
-<<<<<<< HEAD
-       
-=======
-     
->>>>>>> origin/feat/fe-employee-visal
     </div>
-</main>
+</div>
 
 @endsection
 

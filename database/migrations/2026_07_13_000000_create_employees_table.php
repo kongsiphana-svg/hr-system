@@ -27,16 +27,12 @@ return new class extends Migration
             $table->string('address_line_1')->nullable();
             $table->string('address_line_2')->nullable();
             $table->string('city')->nullable();
-<<<<<<< HEAD
-            $table->string('country')->nullable();
-=======
             $table->string('state')->nullable();
             $table->string('postal_code')->nullable();
             $table->string('country')->nullable();
             $table->string('emergency_contact_name')->nullable();
             $table->string('emergency_contact_phone')->nullable();
             $table->string('emergency_contact_relationship')->nullable();
->>>>>>> origin/feat/fe-employee-visal
 
             // Job Details
             $table->string('department');
@@ -44,13 +40,20 @@ return new class extends Migration
             $table->string('employment_type')->nullable();
             $table->date('start_date');
             $table->decimal('salary', 10, 2)->nullable();
-<<<<<<< HEAD
-=======
             $table->string('reporting_manager')->nullable();
->>>>>>> origin/feat/fe-employee-visal
             $table->string('work_location')->nullable();
             $table->string('probation_period')->nullable();
             $table->enum('status', ['active', 'on_leave', 'probation', 'terminated'])->default('active');
+
+            // Payroll-compatible fields
+            $table->enum('pay_type', ['salary', 'hourly'])->default('salary');
+            $table->decimal('base_salary', 10, 2)->default(0);
+            $table->decimal('hourly_rate', 8, 2)->nullable();
+            $table->unsignedInteger('standard_hours')->default(160);
+            $table->decimal('allowances', 10, 2)->default(0);
+            $table->decimal('deduction_rate', 5, 4)->default(0.1000);
+            $table->decimal('fixed_deductions', 10, 2)->default(0);
+            $table->boolean('is_active')->default(true);
 
             $table->timestamps();
         });

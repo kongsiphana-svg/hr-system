@@ -3,11 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Schema;
-=======
-use Illuminate\Auth\Middleware\RedirectIfAuthenticated; // Add this line!
->>>>>>> origin/feat/be-leave-chenglim
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,13 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-<<<<<<< HEAD
         Schema::defaultStringLength(191);
-=======
-        // Force the default guest/RedirectIfAuthenticated redirect to the login page
+
         RedirectIfAuthenticated::redirectUsing(function () {
-            return route('login');
+            return route('dashboard');
         });
->>>>>>> origin/feat/be-leave-chenglim
     }
 }

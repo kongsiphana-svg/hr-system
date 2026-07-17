@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,8 +14,8 @@ class DashboardController extends Controller
     public function index()
     {
         $metrics = [
-            'total_employees' => User::count(),
-            'pending_leaves'  => LeaveRequest::where('status', 'Pending')->count(),
+            'total_employees' => Employee::count(),
+            'pending_leaves' => LeaveRequest::whereIn('status', ['Pending', 'pending'])->count(),
         ];
         $recentLeaves = LeaveRequest::with('user')->latest()->take(4)->get();
 

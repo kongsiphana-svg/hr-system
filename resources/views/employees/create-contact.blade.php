@@ -4,9 +4,8 @@
 
 @section('content')
 
-@include('partials.sidebar')
 
-<main class="ml-[260px] pt-12 pb-12 px-margin-desktop min-h-screen">
+<div class="px-margin-desktop pb-12 pt-8">
     <div class="max-w-4xl mx-auto">
 
         {{-- Breadcrumbs & Title --}}
@@ -185,6 +184,6 @@
             </div>
         </form>
     </div>
-</main>
+</div>
 
 @endsection

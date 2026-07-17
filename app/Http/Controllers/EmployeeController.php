@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\Storage;
-=======
->>>>>>> origin/feat/fe-employee-visal
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
@@ -75,12 +71,7 @@ class EmployeeController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-<<<<<<< HEAD
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $data['avatar_url'] = Storage::url($path);
-=======
             $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
->>>>>>> origin/feat/fe-employee-visal
         }
 
         unset($data['avatar']);
@@ -190,6 +181,11 @@ class EmployeeController extends Controller
             'status' => ['required', 'in:' . implode(',', Employee::STATUSES)],
         ]);
 
+        if (isset($jobData['salary'])) {
+            $jobData['base_salary'] = $jobData['salary'];
+        }
+        $jobData['is_active'] = ($jobData['status'] ?? '') === 'active';
+
         $employee = Employee::create(array_merge($wizardData, $jobData));
 
         session()->forget(self::WIZARD_SESSION_KEY);
@@ -238,15 +234,17 @@ class EmployeeController extends Controller
         $data = $this->validated($request, $employee);
 
         if ($request->hasFile('avatar')) {
-<<<<<<< HEAD
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $data['avatar_url'] = Storage::url($path);
-=======
             $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
->>>>>>> origin/feat/fe-employee-visal
         }
 
         unset($data['avatar']);
+
+        if (array_key_exists('salary', $data)) {
+            $data['base_salary'] = $data['salary'];
+        }
+        if (array_key_exists('status', $data)) {
+            $data['is_active'] = $data['status'] === 'active';
+        }
 
         $employee->update($data);
 
@@ -262,7 +260,10 @@ class EmployeeController extends Controller
      */
     public function deactivate(Employee $employee)
     {
-        $employee->update(['status' => 'terminated']);
+        $employee->update([
+            'status' => 'terminated',
+            'is_active' => false,
+        ]);
 
         return redirect()
             ->route('employees.show', $employee)
@@ -345,8 +346,6 @@ class EmployeeController extends Controller
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Save an uploaded avatar directly into public/uploads/avatars and
      * return its public URL. Deliberately avoids the storage:link symlink
      * approach, since some Nginx configs refuse to follow it (500 error).
@@ -367,7 +366,6 @@ class EmployeeController extends Controller
     }
 
     /**
->>>>>>> origin/feat/fe-employee-visal
      * Distinct department list used to populate the filter dropdown.
      * Seeded with sensible defaults so the list isn't empty before any
      * employees exist yet.

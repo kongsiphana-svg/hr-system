@@ -4,11 +4,8 @@ const emptyRow = document.querySelector('[data-leave-empty]');
 const detailsPanel = document.querySelector('[data-leave-details]');
 const detailsTitle = document.querySelector('[data-leave-details-title]');
 const detailsNote = document.querySelector('[data-leave-details-note]');
+const detailsActions = document.querySelector('[data-leave-details-actions]');
 
-/**
- * Checks whether a leave request status belongs to the selected filter.
- * The history filter includes every request that is no longer pending.
- */
 const matchesFilter = (status, filter) => {
     if (filter === 'history') {
         return status !== 'pending';
@@ -17,31 +14,34 @@ const matchesFilter = (status, filter) => {
     return status === filter;
 };
 
-/**
- * Shows details for the first visible request, or hides the details panel
- * when the current filter has no matching requests.
- */
-const updateDetails = (visibleRows) => {
-    const firstVisibleRow = visibleRows[0];
-
+const updateDetails = (row) => {
     if (!detailsPanel || !detailsTitle || !detailsNote) {
         return;
     }
 
-    detailsPanel.hidden = !firstVisibleRow;
+    detailsPanel.hidden = !row;
 
-    if (!firstVisibleRow) {
+    if (!row) {
         return;
     }
 
-    detailsTitle.textContent = `Request Details: ${firstVisibleRow.dataset.employee}`;
-    detailsNote.textContent = `“${firstVisibleRow.dataset.note}”`;
+    detailsTitle.textContent = `Request Details: ${row.dataset.employee}`;
+    detailsNote.textContent = `“${row.dataset.note}”`;
+
+    if (detailsActions) {
+        detailsActions.hidden = row.dataset.status !== 'pending';
+        const approveForm = detailsActions.querySelector('form[action*="Approved"]');
+        const rejectForm = detailsActions.querySelector('form[action*="Rejected"]');
+        const id = row.dataset.id;
+        if (id && approveForm) {
+            approveForm.action = approveForm.action.replace(/\/leaves\/\d+\//, `/leaves/${id}/`);
+        }
+        if (id && rejectForm) {
+            rejectForm.action = rejectForm.action.replace(/\/leaves\/\d+\//, `/leaves/${id}/`);
+        }
+    }
 };
 
-/**
- * Filters the request rows, updates the active filter button and empty state,
- * then refreshes the request details panel.
- */
 const applyFilter = (filter) => {
     const visibleRows = [];
 
@@ -66,15 +66,22 @@ const applyFilter = (filter) => {
         emptyRow.hidden = visibleRows.length > 0;
     }
 
-    updateDetails(visibleRows);
+    updateDetails(visibleRows[0] || null);
 };
 
-// Applies the selected filter whenever a filter button is clicked.
 filterButtons.forEach((button) => {
     button.addEventListener('click', () => applyFilter(button.dataset.leaveFilter));
 });
 
-// Displays the active filter on initial page load, defaulting to pending requests.
+requestRows.forEach((row) => {
+    row.addEventListener('click', (event) => {
+        if (event.target.closest('button, form, a')) {
+            return;
+        }
+        updateDetails(row);
+    });
+});
+
 if (filterButtons.length && requestRows.length) {
     applyFilter(document.querySelector('[data-leave-filter].active')?.dataset.leaveFilter ?? 'pending');
 }

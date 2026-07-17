@@ -31,7 +31,7 @@ class PayrollController extends Controller
                 $validated['department_id'] ?? null,
                 fn ($query, $departmentId) => $query->whereHas(
                     'employee',
-                    fn($employeeQuery) => $employeeQuery->where('department_id', $departmentId)
+                    fn($employeeQuery) => $employeeQuery->where('department', $departmentId)
 
                 )
             )
@@ -74,7 +74,7 @@ class PayrollController extends Controller
             )
             ->when(
                 empty($validated['employee_id']) && ($validated['department_id'] ?? null),
-                fn ($query) => $query->where('department_id', $validated['department_id'])
+                fn ($query) => $query->where('department', $validated['department_id'])
             )
             ->get();
 
@@ -135,9 +135,9 @@ class PayrollController extends Controller
             'employee_id' => $employee->id,
             'employee_name' => $employee->name,
             'name' => $employee->name,
-            'job_title' => $employee->title,
-            'title' => $employee->title,
-            'department_id' => $employee->department_id,
+            'job_title' => $employee->job_title,
+            'title' => $employee->job_title,
+            'department_id' => $employee->department,
             'employment_type' => $employee->employment_type,
             'pay_period' => $payroll->pay_period,
             'hours' => (float) $payroll->hours_worked,
@@ -156,7 +156,7 @@ class PayrollController extends Controller
                 $departmentId,
                 fn ($query, $deptId) => $query->whereHas(
                     'employee',
-                    fn ($employeeQuery) => $employeeQuery->where('department_id', $deptId)
+                    fn ($employeeQuery) => $employeeQuery->where('department', $deptId)
                 )
             )
             ->get(['gross_pay', 'net_pay', 'employee_id']);

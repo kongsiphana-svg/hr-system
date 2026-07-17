@@ -1,8 +1,8 @@
 @extends('Payroll.layout')
 
-@section('title', 'Payroll Management')
+@section('page-title', 'Payroll Management')
 
-@section('content')
+@section('payroll')
 
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>

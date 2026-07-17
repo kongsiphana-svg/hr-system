@@ -19,9 +19,16 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $adminCode = env('ADMIN_CODE', 'HR-ADMIN-2026');
+
         $request->validate([
             'name' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
+            'admin_code' => ['required', 'string', function ($attribute, $value, $fail) use ($adminCode) {
+                if (! hash_equals((string) $adminCode, (string) $value)) {
+                    $fail('The admin code is invalid.');
+                }
+            }],
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -31,10 +38,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // 1. Automatically log the user in after they register
         Auth::login($user);
 
-        // 2. Redirect them straight to the dashboard
         return redirect()->route('dashboard')->with('success', 'Account created successfully!');
     }
 
@@ -86,7 +91,13 @@ class AuthController extends Controller
 
     public function handleGoogleCallback()
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('login')
+                ->withErrors(['name' => 'Google sign-in failed. Please try again.']);
+        }
 
         $user = User::where('google_id', $googleUser->getId())
             ->orWhere('email', $googleUser->getEmail())

@@ -13,7 +13,7 @@ class PayrollPageController extends Controller
 
         if ($request->filled('department_id')) {
             $query->whereHas('employee', function ($q) use ($request) {
-                $q->where('department_id', $request->department_id);
+                $q->where('department', $request->department_id);
             });
         }
 
@@ -70,7 +70,7 @@ class PayrollPageController extends Controller
 
             return [
                 'employee_id' => $emp->id,
-                'department_id' => $emp->department_id,
+                'department_id' => $emp->department,
                 'employment_type' => $emp->employment_type,
                 'base_salary' => $payroll->base_salary,
                 'hours' => $payroll->hours_worked,
@@ -80,7 +80,7 @@ class PayrollPageController extends Controller
                 'avatar' => 'bg-indigo-600', // Tailwind color for the circle avatar
                 'initials' => strtoupper($initials),
                 'name' => $emp->name,
-                'title' => $emp->title,
+                'title' => $emp->job_title,
             ];
         });
 

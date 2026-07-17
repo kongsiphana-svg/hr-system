@@ -1,4 +1,4 @@
-{{-- Add New Shift Modal (from design message (2).txt) --}}
+{{-- Add New Shift Modal --}}
 <div
     id="add-shift-modal"
     class="fixed inset-0 z-50 hidden items-center justify-center p-4"
@@ -15,7 +15,13 @@
             </button>
         </div>
 
-        <form id="add-shift-form" class="space-y-5 p-6" action="#" method="post">
+        <form
+            id="add-shift-form"
+            class="space-y-5 p-6"
+            action="{{ route('schedules.store') }}"
+            method="post"
+            data-ajax="true"
+        >
             @csrf
             <div>
                 <label for="modal-employee" class="mb-2 block text-xs font-bold text-slate-700">Select Employee</label>
@@ -23,11 +29,13 @@
                     <select
                         id="modal-employee"
                         name="employee_id"
+                        required
                         class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-10 pl-3 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
-                        <option value="1">Alex Rivera</option>
-                        <option value="2">Sarah Chen</option>
-                        <option value="3">Jordan Smith</option>
+                        <option value="" disabled selected>Choose employee…</option>
+                        @foreach (($employees ?? collect()) as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                        @endforeach
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                         @include('Schedule.partials.icons', ['name' => 'chevron-down', 'class' => 'h-4 w-4 text-slate-400'])
@@ -45,7 +53,8 @@
                         id="modal-date"
                         name="date"
                         type="date"
-                        value="2023-10-25"
+                        value="{{ now()->toDateString() }}"
+                        required
                         class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-10 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                 </div>
@@ -59,6 +68,7 @@
                         name="start_time"
                         type="time"
                         value="09:00"
+                        required
                         class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                 </div>
@@ -69,6 +79,7 @@
                         name="end_time"
                         type="time"
                         value="17:00"
+                        required
                         class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                 </div>
@@ -82,15 +93,17 @@
                         name="shift_type"
                         class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-10 pl-3 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
-                        <option>Standard</option>
-                        <option>Overtime</option>
-                        <option>Night Shift</option>
+                        <option value="standard">Standard</option>
+                        <option value="overtime">Overtime</option>
+                        <option value="night">Night Shift</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                         @include('Schedule.partials.icons', ['name' => 'chevron-down', 'class' => 'h-4 w-4 text-slate-400'])
                     </div>
                 </div>
             </div>
+
+            <p data-shift-form-error class="hidden text-xs font-medium text-red-600"></p>
         </form>
 
         <div class="flex space-x-3 border-t border-slate-100 bg-slate-50 px-6 py-4">

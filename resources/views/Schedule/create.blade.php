@@ -3,10 +3,9 @@
 @section('title', 'Add New Shift')
 @section('page-title', 'HR Management System')
 
-@section('content')
+@section('schedule')
     <div class="flex h-full flex-col">
         <div class="flex-grow overflow-y-auto p-6 lg:p-8">
-            {{-- Breadcrumbs --}}
             <div class="mb-8">
                 <nav class="mb-2 flex text-xs font-medium text-gray-500">
                     <a href="{{ route('schedule.index') }}" class="hover:text-blue-600">Scheduling</a>
@@ -15,20 +14,35 @@
                 </nav>
                 <div class="flex items-baseline justify-between">
                     <h2 class="text-2xl font-bold text-gray-900">Add New Shift</h2>
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500">Step 1 of 2: Shift Configuration</span>
+                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500">Shift Configuration</span>
                 </div>
             </div>
+
+            @if ($errors->any())
+                <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <ul class="list-disc pl-4">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if ($employees->isEmpty())
+                <div class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    No employees found. <a href="{{ route('employees.create') }}" class="font-semibold underline">Add an employee</a> before creating shifts.
+                </div>
+            @endif
 
             <form
                 id="create-shift-form"
                 class="mx-auto max-w-6xl space-y-6 pb-20"
-                action="#"
+                action="{{ route('schedules.store') }}"
                 method="post"
                 data-redirect="{{ route('schedule.index') }}"
             >
                 @csrf
 
-                {{-- Employee Assignment --}}
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-6 flex items-center gap-2">
                         @include('Schedule.partials.icons', ['name' => 'user-plus', 'class' => 'h-5 w-5 text-indigo-700'])
@@ -46,22 +60,20 @@
                                 class="block w-full appearance-none rounded-md border-gray-300 bg-white py-2.5 pr-10 pl-10 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             >
-                                <option value="" disabled selected>Search employee by name or ID...</option>
-                                <option value="1024">John Doe (ID: 1024)</option>
-                                <option value="1025">Jane Smith (ID: 1025)</option>
-                                <option value="1">Alex Rivera (ID: 1001)</option>
-                                <option value="2">Sarah Chen (ID: 1002)</option>
-                                <option value="3">Jordan Smith (ID: 1003)</option>
+                                <option value="" disabled {{ old('employee_id') ? '' : 'selected' }}>Search employee by name or ID...</option>
+                                @foreach ($employees as $employee)
+                                    <option value="{{ $employee->id }}" @selected(old('employee_id') == $employee->id)>
+                                        {{ $employee->name }} (ID: {{ $employee->id }}){{ $employee->department ? ' — '.$employee->department : '' }}
+                                    </option>
+                                @endforeach
                             </select>
                             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                 @include('Schedule.partials.icons', ['name' => 'chevron-down', 'class' => 'h-4 w-4 text-gray-400'])
                             </span>
                         </div>
-                        <p class="mt-2 text-xs text-gray-400">Start typing to filter employee list.</p>
                     </div>
                 </div>
 
-                {{-- Shift Timing --}}
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-6 flex items-center gap-2">
                         @include('Schedule.partials.icons', ['name' => 'clock', 'class' => 'h-5 w-5 text-indigo-700'])
@@ -74,6 +86,7 @@
                                 id="date"
                                 name="date"
                                 type="date"
+                                value="{{ old('date', now()->toDateString()) }}"
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             >
@@ -85,9 +98,10 @@
                                 name="shift_type"
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
-                                <option value="standard">Standard (9:00 - 17:00)</option>
-                                <option value="night">Night Shift (22:00 - 06:00)</option>
-                                <option value="custom">Custom</option>
+                                <option value="standard" @selected(old('shift_type', 'standard') === 'standard')>Standard (9:00 - 17:00)</option>
+                                <option value="night" @selected(old('shift_type') === 'night')>Night Shift (22:00 - 06:00)</option>
+                                <option value="overtime" @selected(old('shift_type') === 'overtime')>Overtime</option>
+                                <option value="custom" @selected(old('shift_type') === 'custom')>Custom</option>
                             </select>
                         </div>
                         <div>
@@ -96,7 +110,7 @@
                                 id="start_time"
                                 name="start_time"
                                 type="time"
-                                value="09:00"
+                                value="{{ old('start_time', '09:00') }}"
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             >
@@ -107,7 +121,7 @@
                                 id="end_time"
                                 name="end_time"
                                 type="time"
-                                value="17:00"
+                                value="{{ old('end_time', '17:00') }}"
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             >
@@ -115,7 +129,6 @@
                     </div>
                 </div>
 
-                {{-- Location & Instructions --}}
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-6 flex items-center gap-2">
                         @include('Schedule.partials.icons', ['name' => 'map-pin', 'class' => 'h-5 w-5 text-indigo-700'])
@@ -129,9 +142,9 @@
                                 name="location"
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
-                                <option>Main Office - HQ</option>
-                                <option>Warehouse A</option>
-                                <option>Remote</option>
+                                <option value="Main Office - HQ" @selected(old('location') === 'Main Office - HQ')>Main Office - HQ</option>
+                                <option value="Warehouse A" @selected(old('location') === 'Warehouse A')>Warehouse A</option>
+                                <option value="Remote" @selected(old('location') === 'Remote')>Remote</option>
                             </select>
                         </div>
                         <div>
@@ -142,7 +155,7 @@
                                 rows="4"
                                 placeholder="Enter any specific instructions or handover notes for this shift..."
                                 class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            ></textarea>
+                            >{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -164,6 +177,7 @@
                     style="background-color: #1E1B4B;"
                     onmouseover="this.style.backgroundColor='#2D2A6B'"
                     onmouseout="this.style.backgroundColor='#1E1B4B'"
+                    @disabled($employees->isEmpty())
                 >
                     Add Shift
                     @include('Schedule.partials.icons', ['name' => 'check-circle', 'class' => 'h-4 w-4'])

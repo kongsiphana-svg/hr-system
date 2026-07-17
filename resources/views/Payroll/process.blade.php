@@ -1,6 +1,6 @@
 @extends('Payroll.layout')
 
-@section('title', 'Payroll Processing')
+@section('page-title', 'Payroll Processing')
 
 @push('styles')
 <style>
@@ -14,7 +14,7 @@
 </style>
 @endpush
 
-@section('content')
+@section('payroll')
     @php
         /**
          * Demo rows — replace with $payrolls from controller when backend is ready.

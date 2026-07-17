@@ -1,70 +1,49 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Work Schedule') — HR Portal</title>
+@extends('layouts.app')
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
+@section('title')
+    @yield('page-title', 'Work Schedule')
+@endsection
 
+@push('scripts')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/schedule.js'])
-    @else
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            schedule: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                        },
-                        colors: {
-                            'schedule-sidebar': '#1e293b',
-                            'schedule-sidebar-hover': '#334155',
-                            'schedule-active': '#334155',
-                            'schedule-bg': '#f8fafc',
-                            'schedule-accent': '#2a1ab9',
-                            'schedule-accent-hover': '#1e118c',
-                        },
-                    },
-                },
-            };
-        </script>
-        <script src="{{ asset('js/schedule.js') }}" defer></script>
+        @vite(['resources/js/schedule.js'])
     @endif
+@endpush
 
-    @stack('styles')
-</head>
-<body class="font-schedule antialiased bg-schedule-bg text-slate-900" style="font-family: Inter, ui-sans-serif, system-ui, sans-serif;">
-    {{--
-        Backend connection map (frontend-only placeholders):
-        - GET    /schedule                     list / work schedule
-        - GET    /schedule/calendar            weekly calendar grid
-        - GET    /schedule/create              add new shift form
-        - POST   /api/schedule                 create shift
-        - GET    /api/schedule?week=YYYY-MM-DD list shifts for week
-    --}}
+@section('content')
     <div
         id="schedule-app"
-        class="flex h-screen overflow-hidden"
+        class="min-h-[calc(100vh-4rem)]"
         data-csrf="{{ csrf_token() }}"
-        data-create-url="{{ url('/api/schedule') }}"
-        data-list-url="{{ url('/api/schedule') }}"
+        data-create-url="{{ url('/schedules') }}"
+        data-list-url="{{ url('/schedules') }}"
     >
-        @include('Schedule.partials.sidebar')
+        {{-- Sub-nav for schedule pages --}}
+        <div class="border-b border-outline-variant bg-surface px-6 lg:px-8">
+            <div class="flex items-center gap-1 overflow-x-auto py-2">
+                @php
+                    $scheduleTabs = [
+                        ['label' => 'Work Schedule', 'route' => 'schedule.index'],
+                        ['label' => 'Calendar', 'route' => 'schedule.calendar'],
+                        ['label' => 'Add Shift', 'route' => 'schedule.create'],
+                    ];
+                @endphp
+                @foreach ($scheduleTabs as $tab)
+                    <a
+                        href="{{ route($tab['route']) }}"
+                        class="rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors
+                            {{ request()->routeIs($tab['route'])
+                                ? 'bg-primary text-white'
+                                : 'text-secondary hover:bg-surface-container-low hover:text-on-surface' }}"
+                    >
+                        {{ $tab['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
 
-        <div class="flex min-h-0 min-w-0 flex-1 flex-col">
-            @include('Schedule.partials.topbar')
-
-            <main class="flex-1 overflow-y-auto">
-                @yield('content')
-            </main>
+        <div class="px-6 py-8 lg:px-8">
+            @yield('schedule')
         </div>
     </div>
-
-    @stack('modals')
-    @stack('scripts')
-</body>
-</html>
+@endsection

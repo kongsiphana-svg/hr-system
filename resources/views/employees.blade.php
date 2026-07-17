@@ -4,11 +4,9 @@
 
 @section('content')
 
-@include('partials.sidebar')
-@include('partials.topnav')
 
 {{-- Main Content Canvas --}}
-<main class="ml-[260px] pt-16 min-h-screen">
+<div class="pb-12">
     <div class="p-margin-desktop max-w-container-max mx-auto">
 
         {{-- Page Header Section --}}
@@ -69,10 +67,7 @@
                 <div class="relative z-10">
                     <p class="text-white/70 font-label-sm text-label-sm uppercase tracking-widest">Total Workforce</p>
                     <h3 class="text-display-lg font-display-lg leading-none mt-1">{{ number_format($totalWorkforce) }}</h3>
-<<<<<<< HEAD
-=======
                     <p class="text-primary-fixed font-body-sm mt-1">+{{ $newHiresThisMonth ?? 0 }} this month</p>
->>>>>>> origin/feat/fe-employee-visal
                 </div>
                 <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-white/10 rotate-12">groups</span>
             </div>
@@ -180,10 +175,6 @@
             </div>
         </div>
 
-<<<<<<< HEAD
-        
-        
-=======
         {{-- Footer Meta --}}
         <div class="mt-8 flex justify-between items-center text-label-sm text-secondary">
             <p>© {{ date('Y') }} HRMS Enterprise Admin Console</p>
@@ -193,7 +184,6 @@
             </div>
         </div>
     </div>
->>>>>>> origin/feat/fe-employee-visal
-</main>
+</div>
 
 @endsection

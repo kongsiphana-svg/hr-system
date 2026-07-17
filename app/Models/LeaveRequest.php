@@ -13,8 +13,13 @@ class LeaveRequest extends Model
 
     protected $fillable = ['user_id', 'leave_type', 'start_date', 'end_date', 'status', 'reason'];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
-     }
+    }
 }
