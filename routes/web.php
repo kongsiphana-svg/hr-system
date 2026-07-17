@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveRequestController;
@@ -59,3 +60,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 >>>>>>> origin/feat/be-leave-chenglim
 });
+=======
+use App\Http\Controllers\PayrollPageController;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/payroll', [PayrollPageController::class, 'index'])->name('payroll.index');
+
+Route::get('/payroll/process', function () {
+    return view('Payroll.process');
+})->name('payroll.process');
+>>>>>>> origin/feat/be-payroll-phanna
