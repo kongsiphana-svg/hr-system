@@ -19,7 +19,18 @@
         </form>
     </div>
     <div class="flex items-center gap-6">
+<<<<<<< HEAD
         
+=======
+        <div class="flex items-center gap-4">
+            <button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors" type="button" title="Notifications (not yet configured)">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors" type="button" title="Help">
+                <span class="material-symbols-outlined">help</span>
+            </button>
+        </div>
+>>>>>>> origin/feat/fe-employee-visal
         <div class="h-8 w-[1px] bg-outline-variant"></div>
         <div class="flex items-center gap-2 text-secondary">
             <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>

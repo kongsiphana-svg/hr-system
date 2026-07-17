@@ -69,6 +69,10 @@
                 <div class="relative z-10">
                     <p class="text-white/70 font-label-sm text-label-sm uppercase tracking-widest">Total Workforce</p>
                     <h3 class="text-display-lg font-display-lg leading-none mt-1">{{ number_format($totalWorkforce) }}</h3>
+<<<<<<< HEAD
+=======
+                    <p class="text-primary-fixed font-body-sm mt-1">+{{ $newHiresThisMonth ?? 0 }} this month</p>
+>>>>>>> origin/feat/fe-employee-visal
                 </div>
                 <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-white/10 rotate-12">groups</span>
             </div>
@@ -176,8 +180,20 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         
         
+=======
+        {{-- Footer Meta --}}
+        <div class="mt-8 flex justify-between items-center text-label-sm text-secondary">
+            <p>© {{ date('Y') }} HRMS Enterprise Admin Console</p>
+            <div class="flex gap-4">
+                <a class="hover:text-primary transition-colors" href="{{ url('/privacy') }}">Privacy Policy</a>
+                <a class="hover:text-primary transition-colors" href="{{ url('/terms') }}">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+>>>>>>> origin/feat/fe-employee-visal
 </main>
 
 @endsection

@@ -27,7 +27,16 @@ return new class extends Migration
             $table->string('address_line_1')->nullable();
             $table->string('address_line_2')->nullable();
             $table->string('city')->nullable();
+<<<<<<< HEAD
             $table->string('country')->nullable();
+=======
+            $table->string('state')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('country')->nullable();
+            $table->string('emergency_contact_name')->nullable();
+            $table->string('emergency_contact_phone')->nullable();
+            $table->string('emergency_contact_relationship')->nullable();
+>>>>>>> origin/feat/fe-employee-visal
 
             // Job Details
             $table->string('department');
@@ -35,6 +44,10 @@ return new class extends Migration
             $table->string('employment_type')->nullable();
             $table->date('start_date');
             $table->decimal('salary', 10, 2)->nullable();
+<<<<<<< HEAD
+=======
+            $table->string('reporting_manager')->nullable();
+>>>>>>> origin/feat/fe-employee-visal
             $table->string('work_location')->nullable();
             $table->string('probation_period')->nullable();
             $table->enum('status', ['active', 'on_leave', 'probation', 'terminated'])->default('active');

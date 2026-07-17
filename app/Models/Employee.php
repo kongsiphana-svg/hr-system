@@ -3,6 +3,9 @@
 namespace App\Models;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/feat/fe-employee-visal
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -80,6 +83,7 @@ class Employee extends Model
     public function getNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
+<<<<<<< HEAD
 =======
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -118,5 +122,7 @@ class Employee extends Model {
 
         return implode('', array_slice($letters, 0, 2)) ?: '?';
 >>>>>>> origin/feat/be-payroll-phanna
+=======
+>>>>>>> origin/feat/fe-employee-visal
     }
 }
