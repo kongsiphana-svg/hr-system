@@ -29,6 +29,7 @@ Route::resource('employees', EmployeeController::class)->except(['create', 'stor
 Route::patch('/employees/{employee}/deactivate', [EmployeeController::class, 'deactivate'])->name('employees.deactivate');
 
 Route::get('/', function () {
+<<<<<<< HEAD
     return redirect()->route('employees.index');
 =======
 Route::get('/', function () { return view('welcome'); })->name('portal');
@@ -123,3 +124,19 @@ Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
 Route::view('/leave-requests', 'leave-requests.index')
     ->name('leave-requests.index');
 >>>>>>> origin/feat/fe-leave-sokheng
+=======
+    return view('welcome');
+})->name('home');
+
+Route::get('/schedule', function () {
+    return view('Schedule.index');
+})->name('schedule.index');
+
+Route::get('/schedule/calendar', function () {
+    return view('Schedule.calendar');
+})->name('schedule.calendar');
+
+Route::get('/schedule/create', function () {
+    return view('Schedule.create');
+})->name('schedule.create');
+>>>>>>> origin/feat/fe-schedule-viphou

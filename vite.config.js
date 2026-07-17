@@ -8,9 +8,14 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+<<<<<<< HEAD
                 'resources/css/leave-requests.css',
                 'resources/js/app.js',
                 'resources/js/leave-requests.js',
+=======
+                'resources/js/app.js',
+                'resources/js/schedule.js',
+>>>>>>> origin/feat/fe-schedule-viphou
             ],
             refresh: true,
             fonts: [
