@@ -19,10 +19,9 @@ class Schedule extends Model
         'status',
     ];
 
-    protected $casts = [
-        'date' => 'date',
-    ];
-
+   protected $casts = [
+    'date' => 'date',
+   ];
     protected $appends = ['hours', 'start_time_formatted', 'end_time_formatted'];
 
     public function employee(): BelongsTo

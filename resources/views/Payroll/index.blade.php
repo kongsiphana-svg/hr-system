@@ -82,7 +82,7 @@
         {{-- TABLE SECTION --}}
         <div class="overflow-x-auto">
             @if($isHistoryView && isset($historyPayrolls))
-                {{-- 📋 HISTORY MODE TABLE --}}
+                {{-- HISTORY MODE TABLE --}}
                 <table class="w-full min-w-[720px] text-left text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50/80">
@@ -98,8 +98,23 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($historyPayrolls as $record)
                             <tr class="hover:bg-slate-50/70">
-                                <td class="px-5 py-4 font-semibold text-slate-900">
-                                    {{ $record->employee->first_name ?? 'Unknown' }} {{ $record->employee->last_name ?? '' }}
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center gap-3">
+                                        @if(!empty($record->employee?->avatar_url))
+                                            <img 
+                                                src="{{ $record->employee->avatar_url }}" 
+                                                alt="{{ $record->employee->first_name ?? 'Employee' }}" 
+                                                class="h-9 w-9 shrink-0 rounded-full object-cover border border-slate-200 shadow-sm"
+                                            >
+                                        @else
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-slate-200 text-slate-700">
+                                                {{ strtoupper(substr($record->employee?->first_name ?? 'E', 0, 1)) }}
+                                            </span>
+                                        @endif
+                                        <span class="font-semibold text-slate-900">
+                                            {{ $record->employee->first_name ?? 'Unknown' }} {{ $record->employee->last_name ?? '' }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-5 py-4"><span class="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{{ $record->pay_period }}</span></td>
                                 <td class="px-5 py-4 text-slate-700">{{ $money($record->base_salary) }}</td>
@@ -116,7 +131,7 @@
                     </tbody>
                 </table>
             @else
-                {{-- ⚙️ MONTHLY PROCESSING TABLE --}}
+                {{-- MONTHLY PROCESSING TABLE --}}
                 <table class="w-full min-w-[720px] text-left text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50/80">
@@ -134,9 +149,19 @@
                             <tr class="hover:bg-slate-50/70">
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
-                                        <span class="flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white {{ $employee['avatar'] }}">
-                                            {{ $employee['initials'] }}
-                                        </span>
+                                        {{-- Employee Avatar / Profile Picture --}}
+                                        @if (!empty($employee['avatar_url']))
+                                            <img 
+                                                src="{{ $employee['avatar_url'] }}" 
+                                                alt="{{ $employee['name'] }}" 
+                                                class="h-9 w-9 shrink-0 rounded-full object-cover border border-slate-200 shadow-sm"
+                                            >
+                                        @else
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white {{ $employee['avatar'] }}">
+                                                {{ $employee['initials'] }}
+                                            </span>
+                                        @endif
+
                                         <div>
                                             <p class="font-semibold text-slate-900">{{ $employee['name'] }}</p>
                                             <p class="text-xs text-slate-500">{{ $employee['title'] }}</p>
@@ -219,7 +244,7 @@
                                                     <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">Confirm & Save</button>
                                                 </div>
                                             </form>
-                       4                 </div>
+                                        </div>
                                     </dialog>
                                 </td>
                             </tr>
@@ -230,4 +255,4 @@
         </div>
     </div>
     
-    @endsection
+@endsection
