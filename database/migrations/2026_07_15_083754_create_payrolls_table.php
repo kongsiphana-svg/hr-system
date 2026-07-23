@@ -22,8 +22,7 @@ return new class extends Migration
             $table->decimal('allowances', 10, 2)->default(0);
             $table->decimal('deductions', 10, 2)->default(0);
             $table->decimal('net_pay', 10, 2);
-
-            $table->string('status')->default('processed');
+            $table->string('status')->default('pending');
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
             $table->unique(['employee_id', 'pay_period']);
