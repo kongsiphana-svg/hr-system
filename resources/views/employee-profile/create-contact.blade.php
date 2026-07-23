@@ -50,7 +50,7 @@
             </div>
             <div class="flex items-center gap-3 opacity-50">
                 <div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-label-md">3</div>
-                <span class="text-label-md text-on-surface-variant">Review</span>
+                <span class="text-label-md text-on-surface-variant">Job Details</span>
             </div>
         </div>
     </div>
@@ -120,7 +120,7 @@
                                     type="tel"
                                     value="{{ old('mobile_phone') }}"
                                     class="w-full pl-10 pr-4 py-3 border @error('mobile_phone') border-error @else border-outline-variant @enderror focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-lg text-body-md"
-                                    placeholder="+1 (555) 000-0000">
+                                    placeholder="087654356">
                             </div>
                             @error('mobile_phone')
                                 <p class="text-label-sm text-error">{{ $message }}</p>
@@ -139,21 +139,11 @@
                                         type="tel"
                                         value="{{ old('work_phone') }}"
                                         class="w-full pl-10 pr-4 py-3 border @error('work_phone') border-error @else border-outline-variant @enderror focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-lg text-body-md"
-                                        placeholder="+1 (555) 123-4567">
+                                        placeholder="012345678">
                                 </div>
                                 @error('work_phone')
                                     <p class="text-label-sm text-error">{{ $message }}</p>
                                 @enderror
-                            </div>
-                            <div class="col-span-1 space-y-2">
-                                <label for="work_phone_ext" class="block font-body-sm font-bold text-on-surface-variant uppercase tracking-wide">Ext.</label>
-                                <input
-                                    id="work_phone_ext"
-                                    name="work_phone_ext"
-                                    type="text"
-                                    value="{{ old('work_phone_ext') }}"
-                                    class="w-full px-4 py-3 border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-lg text-body-md"
-                                    placeholder="102">
                             </div>
                         </div>
                     </div>
@@ -245,7 +235,7 @@
                                     type="text"
                                     value="{{ old('city') }}"
                                     class="w-full px-4 py-3 border @error('city') border-error @else border-outline-variant @enderror focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-lg text-body-md"
-                                    placeholder="San Francisco">
+                                    placeholder="Phnom Penh">
                                 @error('city')
                                     <p class="text-label-sm text-error">{{ $message }}</p>
                                 @enderror

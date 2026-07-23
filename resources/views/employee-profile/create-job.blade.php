@@ -31,7 +31,7 @@
                 <div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold text-label-md">
                     <span class="material-symbols-outlined text-[18px]">check</span>
                 </div>
-                <span class="font-label-md text-label-md text-on-surface">Experience</span>
+                <span class="font-label-md text-label-md text-on-surface">Contact Details</span>
             </div>
             <div class="flex-1 h-[2px] bg-primary-container mx-4"></div>
             <div class="flex items-center gap-3">
@@ -45,7 +45,7 @@
                 <div class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant font-bold text-label-md">
                     4
                 </div>
-                <span class="font-label-md text-label-md text-on-surface-variant">Review</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">Profile Created</span>
             </div>
         </div>
     </div>
