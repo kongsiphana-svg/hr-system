@@ -3,203 +3,435 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use App\Models\Payroll;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\File;
+use App\Models\Payroll;
 
-class PayrollPageController extends Controller
+class EmployeeController extends Controller
 {
+    /**
+     * Number of rows shown per page in the directory table.
+     */
+    protected const PER_PAGE = 10;
+
+    /**
+     * Session key the create wizard uses to accumulate data across steps.
+     */
+    protected const WIZARD_SESSION_KEY = 'employee_wizard.data';
+
+    /**
+     * GET /employees
+     */
     public function index(Request $request)
     {
-        $selectedMonth = $request->input('month', now()->format('Y-m'));
+        $employees = $this->filteredQuery($request)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->paginate(self::PER_PAGE)
+            ->withQueryString();
 
-        // 1. Generate Dynamic Month Options (12 months back, 6 months ahead)
-        $monthOptions = ['all' => 'View All Processed History'];
-        $start = now()->subMonths(12);
-        $end   = now()->addMonths(6);
+        return view('employees', [
+            'employees' => $employees,
+            'departments' => $this->departments(),
+            'totalWorkforce' => Employee::count(),
+            'newHiresThisMonth' => Employee::whereBetween('start_date', [
+                now()->startOfMonth(),
+                now()->endOfMonth(),
+            ])->count(),
+        ]);
+    }
 
-        while ($start->lte($end)) {
-            $value = $start->format('Y-m');
-            $label = $start->format('F Y');
-            $monthOptions[$value] = $label;
-            $start->addMonth();
+    /**
+     * GET /employees/create
+     *
+     * Step 1 of 3: Personal Information.
+     */
+    public function create()
+    {
+        return view('employees.create', [
+            'old' => session(self::WIZARD_SESSION_KEY, []),
+            'genders' => Employee::GENDERS,
+        ]);
+    }
+
+    /**
+     * POST /employees/create
+     *
+     * Validates step 1, stashes it in the session, and moves to step 2.
+     */
+    public function storeStep1(Request $request)
+    {
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'date_of_birth' => ['required', 'date', 'before:today'],
+            'gender' => ['required', 'in:' . implode(',', Employee::GENDERS)],
+            'nationality' => ['required', 'string', 'max:255'],
+            'identification_id' => ['required', 'string', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
         }
-        $monthOptions = array_reverse($monthOptions, true);
 
-        // 2. Base employee query with filters
-        $employeesQuery = Employee::query()
-            ->when($request->filled('department_id') && $request->department_id !== 'all', function ($query) use ($request) {
-                $query->where('department', $request->department_id);
+        unset($data['avatar']);
+
+        session([self::WIZARD_SESSION_KEY => $data]);
+
+        return redirect()->route('employees.create.contact');
+    }
+
+    /**
+     * GET /employees/create/contact
+     *
+     * Step 2 of 3: Contact Details.
+     */
+    public function createContact()
+    {
+        if (! session()->has(self::WIZARD_SESSION_KEY . '.first_name')) {
+            return redirect()
+                ->route('employees.create')
+                ->with('status', 'Please start with the Personal Information step first.');
+        }
+
+        return view('employees.create-contact', [
+            'step1' => session(self::WIZARD_SESSION_KEY),
+        ]);
+    }
+
+    /**
+     * POST /employees/create/contact
+     *
+     * Validates step 2, merges it into the wizard session, and moves to step 3.
+     */
+    public function storeContact(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255', 'unique:employees,email'],
+            'personal_email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'address_line_1' => ['nullable', 'string', 'max:255'],
+            'address_line_2' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
+            'emergency_contact_relationship' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        session([self::WIZARD_SESSION_KEY => array_merge(session(self::WIZARD_SESSION_KEY, []), $data)]);
+
+        return redirect()->route('employees.create.job');
+    }
+
+    /**
+     * GET /employees/create/job
+     *
+     * Step 3 of 3: Job Details.
+     */
+    public function createJob()
+    {
+        if (! session()->has(self::WIZARD_SESSION_KEY . '.email')) {
+            return redirect()
+                ->route('employees.create.contact')
+                ->with('status', 'Please complete the Contact Details step first.');
+        }
+
+        return view('employees.create-job', [
+            'wizard' => session(self::WIZARD_SESSION_KEY),
+            'departments' => $this->departments(),
+            'statuses' => Employee::STATUSES,
+            'employmentTypes' => Employee::EMPLOYMENT_TYPES,
+            'workLocations' => Employee::WORK_LOCATIONS,
+            'probationPeriods' => Employee::PROBATION_PERIODS,
+            'reportingManagers' => Employee::query()
+                ->orderBy('first_name')
+                ->get()
+                ->map(fn (Employee $employee) => $employee->name),
+        ]);
+    }
+
+    /**
+     * POST /employees/create/job
+     *
+     * Validates step 3, merges it with the accumulated wizard session,
+     * creates the employee, and clears the session.
+     */
+    public function store(Request $request)
+    {
+        if (! session()->has(self::WIZARD_SESSION_KEY . '.email')) {
+            return redirect()
+                ->route('employees.create.contact')
+                ->with('status', 'Please complete the Contact Details step first.');
+        }
+
+        $wizardData = session(self::WIZARD_SESSION_KEY);
+
+        $jobData = $request->validate([
+            'department' => ['required', 'string', 'max:255'],
+            'job_title' => ['required', 'string', 'max:255'],
+            'employment_type' => ['required', 'in:' . implode(',', Employee::EMPLOYMENT_TYPES)],
+            'start_date' => ['required', 'date'],
+            'salary' => ['nullable', 'numeric', 'min:0'],
+            'reporting_manager' => ['nullable', 'string', 'max:255'],
+            'work_location' => ['required', 'in:' . implode(',', Employee::WORK_LOCATIONS)],
+            'probation_period' => ['required', 'in:' . implode(',', Employee::PROBATION_PERIODS)],
+            'status' => ['required', 'in:' . implode(',', Employee::STATUSES)],
+        ]);
+
+       
+
+        $employee = Employee::create(array_merge($wizardData, $jobData));
+
+        session()->forget(self::WIZARD_SESSION_KEY);
+
+        return redirect()
+            ->route('employees.show', $employee)
+            ->with('status', "{$employee->name} was added to the directory.");
+    }
+
+    /**
+     * GET /employees/{employee}
+     */
+    public function show(Employee $employee)
+    {
+        return view('employees.show', [
+            'employee' => $employee,
+        ]);
+    }
+
+    /**
+     * GET /employees/{employee}/edit
+     */
+    public function edit(Employee $employee)
+    {
+        return view('employees.edit', [
+            'employee' => $employee,
+            'departments' => $this->departments(),
+            'statuses' => Employee::STATUSES,
+            'genders' => Employee::GENDERS,
+            'employmentTypes' => Employee::EMPLOYMENT_TYPES,
+            'workLocations' => Employee::WORK_LOCATIONS,
+            'probationPeriods' => Employee::PROBATION_PERIODS,
+            'reportingManagers' => Employee::query()
+                ->where('id', '!=', $employee->id)
+                ->orderBy('first_name')
+                ->get()
+                ->map(fn (Employee $e) => $e->name),
+        ]);
+    }
+
+   /**
+ * PUT/PATCH /employees/{employee}
+ */
+   public function update(Request $request, Employee $employee)
+   {
+      $data = $this->validated($request, $employee);
+
+       if ($request->hasFile('avatar')) {
+        $data['avatar_url'] = $this->storeAvatar($request->file('avatar'));
+       }
+
+    unset($data['avatar']);
+
+    // Remove fields that do not exist in the database table
+    unset($data['reporting_manager'], $data['base_salary'], $data['is_active']);
+
+    $employee->update($data);
+
+    return redirect()
+        ->route('employees.show', $employee)
+        ->with('status', "{$employee->first_name}'s record was updated.");
+   }
+
+   /**
+ * PATCH /employees/{employee}/deactivate
+ *
+ * Quick status-only update, separate from the full edit form.
+ */
+    public function deactivate(Employee $employee)
+    {
+       $employee->update([
+          'status' => 'terminated',
+       ]);
+
+       return redirect()
+        ->route('employees.show', $employee)
+        ->with('status', "{$employee->first_name}'s account was deactivated.");
+    }
+
+    /**
+     * DELETE /employees/{employee}
+     */
+    public function destroy(Employee $employee)
+    {
+        $name = $employee->name;
+        $employee->delete();
+
+        return redirect()
+            ->route('employees.index')
+            ->with('status', "{$name} was removed from the directory.");
+    }
+
+    /**
+     * GET /employees/export
+     *
+     * Streams the (optionally filtered) employee directory as a CSV.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $employees = $this->filteredQuery($request)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+
+        $filename = 'employees-' . now()->format('Y-m-d') . '.csv';
+
+        $callback = function () use ($employees) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, ['First Name', 'Last Name', 'Email', 'Department', 'Job Title', 'Start Date', 'Status']);
+
+            foreach ($employees as $employee) {
+                fputcsv($handle, [
+                    $employee->first_name,
+                    $employee->last_name,
+                    $employee->email,
+                    $employee->department,
+                    $employee->job_title,
+                    optional($employee->start_date)->format('Y-m-d'),
+                    $employee->status,
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
+     * Apply the search/department/status filters shared by index() and export().
+     */
+    protected function filteredQuery(Request $request)
+    {
+        return Employee::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $term = '%' . $request->string('search') . '%';
+                $query->where(function ($query) use ($term) {
+                    $query->where('first_name', 'like', $term)
+                        ->orWhere('last_name', 'like', $term)
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('job_title', 'like', $term);
+                });
             })
-            ->when($request->filled('employment_type') && $request->employment_type !== 'all', function ($query) use ($request) {
-                $query->where('employment_type', $request->employment_type);
+            ->when($request->filled('department'), function ($query) use ($request) {
+                $query->where('department', $request->string('department'));
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->string('status'));
             });
-
-        // -------------------------------------------------------------
-        // MODE A: MASTER HISTORY VIEW (All Months / Cycles)
-        // -------------------------------------------------------------
-        if ($selectedMonth === 'all') {
-            $historyPayrolls = Payroll::with('employee')
-                ->whereHas('employee', function ($q) use ($request) {
-                    if ($request->filled('department_id') && $request->department_id !== 'all') {
-                        $q->where('department', $request->department_id);
-                    }
-                    if ($request->filled('employment_type') && $request->employment_type !== 'all') {
-                        $q->where('employment_type', $request->employment_type);
-                    }
-                })
-                ->orderBy('pay_period', 'desc')
-                ->paginate(15)
-                ->withQueryString();
-
-            return view('Payroll.index', [
-                'isHistoryView'   => false,
-                'payrolls'        => $payrolls,
-                'employees'       => $formattedEmployees,
-                'selectedMonth'   => $selectedMonth,
-                'monthOptions'    => $monthOptions, // <--- Add this line!
-                'departments'     => $this->getDepartments(),
-                'employmentTypes' => $this->getEmploymentTypes(),
-                'summary'         => $this->getSummaryStats($selectedMonth, $existingPayrolls, $payrolls->total()),
-                'money'           => fn ($amt) => '$' . number_format((float)$amt, 2),
-            ]);
-        }
-
-        // -------------------------------------------------------------
-        // MODE B: MONTHLY CYCLE PROCESSING (e.g., 2026-07)
-        // -------------------------------------------------------------
-        $payrolls = $employeesQuery->paginate(10)->withQueryString();
-
-        $existingPayrolls = Payroll::where('pay_period', $selectedMonth)
-            ->get()
-            ->keyBy('employee_id');
-
-        $formattedEmployees = collect($payrolls->items())->map(function ($emp) use ($existingPayrolls) {
-            $firstName = $emp->first_name ?? '';
-            $lastName  = $emp->last_name ?? '';
-            $initials  = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
-
-            $baseSalary = $emp->salary ?? 0;
-            $record     = $existingPayrolls->get($emp->id);
-
-            $allowances = $record ? $record->allowances : 0;
-            $deductions = $record ? $record->deductions : 0;
-            $netPay     = $record ? $record->net_pay : ($baseSalary + $allowances - $deductions);
-            $status     = $record ? $record->status : 'Pending';
-
-            return [
-                'employee_id' => $emp->id,
-                'name'        => trim("{$firstName} {$lastName}"),
-                'title'       => $emp->job_title ?? 'Employee',
-                'initials'    => $initials ?: 'EM',
-                'avatar'      => 'bg-slate-700',
-                'base_salary' => $baseSalary,
-                'allowances'  => $allowances,
-                'deductions'  => $deductions,
-                'net_pay'     => $netPay,
-                'status'      => $status,
-            ];
-        });
-
-        return view('Payroll.index', [
-            'isHistoryView'   => false,
-            'payrolls'        => $payrolls,
-            'employees'       => $formattedEmployees,
-            'selectedMonth'   => $selectedMonth,
-            'monthOptions'    => $monthOptions,
-            'departments'     => $this->getDepartments(),
-            'employmentTypes' => $this->getEmploymentTypes(),
-            'summary'         => $this->getSummaryStats($selectedMonth, $existingPayrolls, $payrolls->total()),
-            'money'           => fn ($amt) => '$' . number_format((float)$amt, 2),
-        ]);
     }
 
-    public function processStore(Request $request, $employeeId)
+    /**
+     * Save an uploaded avatar directly into public/uploads/avatars and
+     * return its public URL. Deliberately avoids the storage:link symlink
+     * approach, since some Nginx configs refuse to follow it (500 error).
+     */
+  protected function storeAvatar(\Illuminate\Http\UploadedFile $file): string
+  {
+    // Generate a unique filename
+    $filename = uniqid('avatar_') . '.' . $file->getClientOriginalExtension();
+
+    // Store in public/uploads/avatars using the 'public' disk
+    $path = $file->storeAs('uploads/avatars', $filename, 'public');
+
+    // Returns the full public URL for the stored image
+    return asset('storage/' . $path);
+   }
+
+    /**
+     * Distinct department list used to populate the filter dropdown.
+     * Seeded with sensible defaults so the list isn't empty before any
+     * employees exist yet.
+     */
+    protected function departments(): array
     {
-        $request->validate([
-            'pay_period' => 'required|string',
-            'allowances' => 'required|numeric|min:0',
-            'deductions' => 'required|numeric|min:0',
+        $defaults = ['Engineering', 'Operations', 'Support', 'Sales', 'Marketing', 'HR'];
+
+        $existing = Employee::query()
+            ->select('department')
+            ->distinct()
+            ->pluck('department')
+            ->all();
+
+        return collect($defaults)
+            ->merge($existing)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    protected static function booted()
+{
+    static::created(function ($employee) {
+        Payroll::create([
+            'employee_id' => $employee->id,
+            'base_salary' => $employee->salary ?? 0,
+            'allowances'  => 0,
+            'deductions'  => 0,
+            'net_pay'     => $employee->salary ?? 0,
+            'status'      => 'Pending',
         ]);
+    });
+}
 
-        $employee   = Employee::findOrFail($employeeId);
-        $base       = $employee->salary ?? 0;
-        $allowances = $request->allowances;
-        $deductions = $request->deductions;
-        $grossPay   = $base + $allowances;
-        $netPay     = $grossPay - $deductions;
-
-        Payroll::updateOrCreate(
-            [
-                'employee_id' => $employee->id,
-                'pay_period'  => $request->pay_period,
+    /**
+     * Shared validation rules for update().
+     */
+    protected function validated(Request $request, Employee $employee): array
+    {
+        return $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'date_of_birth' => ['required', 'date', 'before:today'],
+            'gender' => ['required', 'in:' . implode(',', Employee::GENDERS)],
+            'nationality' => ['required', 'string', 'max:255'],
+            'identification_id' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:employees,email,' . $employee->id,
             ],
-            [
-                'base_salary'  => $base,
-                'gross_pay'    => $grossPay,
-                'allowances'   => $allowances,
-                'deductions'   => $deductions,
-                'net_pay'      => $netPay,
-                'status'       => 'Processed',
-                'processed_at' => now(),
-            ]
-        );
-
-        return redirect()->back()->with('success', 'Payroll processed successfully!');
-    }
-
-    public function reset($employeeId, Request $request)
-    {
-        $payPeriod = $request->input('pay_period', now()->format('Y-m'));
-
-        Payroll::where('employee_id', $employeeId)
-            ->where('pay_period', $payPeriod)
-            ->delete();
-
-        return redirect()->back()->with('success', 'Payroll record reset to Pending.');
-    }
-
-    private function getDepartments()
-    {
-        return [
-            'all'         => 'All Departments',
-            'Engineering' => 'Engineering',
-            'Operations'  => 'Operations',
-            'Support'     => 'Support',
-            'Sales'       => 'Sales',
-            'Marketing'   => 'Marketing',
-            'HR'          => 'HR',
-        ];
-    }
-
-    private function getEmploymentTypes()
-    {
-        return [
-            'all'       => 'All Types',
-            'full_time' => 'Full-time',
-            'part_time' => 'Part-time',
-            'contract'  => 'Contract',
-        ];
-    }
-
-    private function getSummaryStats($month, $existingPayrolls = null, $totalEmployees = 0)
-    {
-        $money = fn ($amt) => '$' . number_format((float)$amt, 2);
-
-        if ($month === 'all') {
-            return [
-                ['label' => 'Total Base Payroll', 'value' => $money(Employee::sum('salary')), 'hint' => 'Gross base salary'],
-                ['label' => 'All-Time Disbursed', 'value' => $money(Payroll::sum('net_pay')), 'hint' => 'Across all cycles'],
-                ['label' => 'Total Processed Logs', 'value' => Payroll::count(), 'hint' => 'All historical records'],
-            ];
-        }
-
-        $processedCount    = $existingPayrolls ? $existingPayrolls->where('status', 'Processed')->count() : 0;
-        $totalNetDisbursed = $existingPayrolls ? $existingPayrolls->sum('net_pay') : 0;
-
-        return [
-            ['label' => 'TOTAL BASE PAYROLL', 'value' => $money(Employee::sum('salary')), 'hint' => 'Gross base salary'],
-            ['label' => "NET DISBURSED ({$month})", 'value' => $money($totalNetDisbursed), 'hint' => 'Disbursed for selected cycle'],
-            ['label' => 'EMPLOYEES PROCESSED', 'value' => "{$processedCount} / {$totalEmployees}", 'hint' => 'In current view'],
-        ];
+            'personal_email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'address_line_1' => ['nullable', 'string', 'max:255'],
+            'address_line_2' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
+            'emergency_contact_relationship' => ['nullable', 'string', 'max:255'],
+            'department' => ['required', 'string', 'max:255'],
+            'job_title' => ['required', 'string', 'max:255'],
+            'employment_type' => ['required', 'in:' . implode(',', Employee::EMPLOYMENT_TYPES)],
+            'start_date' => ['required', 'date'],
+            'salary' => ['nullable', 'numeric', 'min:0'],
+            'reporting_manager' => ['nullable', 'string', 'max:255'],
+            'work_location' => ['required', 'in:' . implode(',', Employee::WORK_LOCATIONS)],
+            'probation_period' => ['required', 'in:' . implode(',', Employee::PROBATION_PERIODS)],
+            'status' => ['required', 'in:' . implode(',', Employee::STATUSES)],
+            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
+        ]);
     }
 }
