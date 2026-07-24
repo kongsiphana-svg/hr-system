@@ -121,6 +121,7 @@ function rowDataset(row) {
         email: row.email ?? '',
         baseSalary: row.base_salary ?? 0,
         hoursWorked: row.hours_worked ?? row.hours ?? 0,
+        standardHours: row.standard_hours ?? 160,
         approvedLeaveDays: row.approved_leave_days ?? 0,
         overtimeHours: row.overtime_hours ?? 0,
         allowances: row.allowances ?? 0,
@@ -143,6 +144,7 @@ function applyRowDataset(tr, data) {
         email: 'email',
         baseSalary: 'baseSalary',
         hoursWorked: 'hoursWorked',
+        standardHours: 'standardHours',
         approvedLeaveDays: 'approvedLeaveDays',
         overtimeHours: 'overtimeHours',
         allowances: 'allowances',
@@ -183,6 +185,7 @@ function renderPayrollRows(tbody, rows) {
             data-email="${d.email}"
             data-base-salary="${d.baseSalary}"
             data-hours-worked="${d.hoursWorked}"
+            data-standard-hours="${d.standardHours}"
             data-approved-leave-days="${d.approvedLeaveDays}"
             data-overtime-hours="${d.overtimeHours}"
             data-allowances="${d.allowances}"
@@ -246,7 +249,7 @@ function fillFromRow(modal, row) {
     set('employee_id', row.dataset.employeeId || '—');
     set('pay_period', row.dataset.payPeriod || document.getElementById('pay_period')?.selectedOptions?.[0]?.text || '—');
     set('base_salary', formatMoney(row.dataset.baseSalary));
-    set('hours_worked', `${Number(row.dataset.hoursWorked || 0).toFixed(1)}h`);
+    set('hours_worked', `${Number(row.dataset.standardHours || 0).toFixed(1)}h`);
     set('approved_leave_days', `${Number(row.dataset.approvedLeaveDays || 0).toFixed(1)} days`);
     set('overtime_hours', `${Number(row.dataset.overtimeHours || 0).toFixed(1)}h`);
     set('allowances', formatMoney(row.dataset.allowances));

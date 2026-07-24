@@ -223,19 +223,12 @@
                     </div>
                     <div>
                         <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Pay Type</dt>
-                        <dd class="font-body-md text-on-surface">{{ ucfirst($employee->pay_type ?? 'salary') }}</dd>
+                        <dd class="font-body-md text-on-surface">Salary</dd>
                     </div>
-                    @if (($employee->pay_type ?? 'salary') === 'hourly')
-                        <div>
-                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Hourly Rate</dt>
-                            <dd class="font-body-md text-on-surface">${{ number_format((float) $employee->hourly_rate, 2) }}</dd>
-                        </div>
-                    @else
-                        <div>
-                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Monthly Base Salary</dt>
-                            <dd class="font-body-md text-on-surface">${{ number_format((float) ($employee->base_salary ?: $employee->salary), 2) }}</dd>
-                        </div>
-                    @endif
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Monthly Base Salary</dt>
+                        <dd class="font-body-md text-on-surface">${{ number_format((float) ($employee->base_salary ?: $employee->salary), 2) }}</dd>
+                    </div>
                     <div>
                         <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Standard Hours</dt>
                         <dd class="font-body-md text-on-surface">{{ $employee->standard_hours ?? 160 }}h / month</dd>

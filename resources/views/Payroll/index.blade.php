@@ -151,6 +151,7 @@
                             data-email="{{ $row['email'] }}"
                             data-base-salary="{{ $row['base_salary'] }}"
                             data-hours-worked="{{ $row['hours_worked'] }}"
+                            data-standard-hours="{{ $row['standard_hours'] }}"
                             data-approved-leave-days="{{ $row['approved_leave_days'] }}"
                             data-overtime-hours="{{ $row['overtime_hours'] }}"
                             data-allowances="{{ $row['allowances'] }}"

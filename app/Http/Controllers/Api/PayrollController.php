@@ -278,6 +278,7 @@ class PayrollController extends Controller
             'pay_period' => $payroll->pay_period,
             'hours' => (float) $payroll->hours_worked,
             'hours_worked' => (float) $payroll->hours_worked,
+            'standard_hours' => (int) ($employee?->standard_hours ?: 160),
             'approved_leave_days' => (float) $payroll->approved_leave_days,
             'overtime_hours' => (float) $payroll->overtime_hours,
             'base_salary' => (float) $payroll->base_salary,

@@ -337,7 +337,7 @@
                             @enderror
                         </div>
 
-                        <div data-pay-field="salary">
+                        <div>
                             <label class="block font-body-sm font-bold text-on-surface mb-2" for="salary">Monthly Base Salary ($)</label>
                             <input
                                 class="w-full border @error('salary') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
@@ -348,27 +348,10 @@
                                 min="0"
                                 step="0.01"
                                 value="{{ old('salary') }}"
+                                required
                             >
                             <p class="font-body-sm text-secondary mt-1">Monthly amount used as payroll base salary.</p>
                             @error('salary')
-                                <p class="font-body-sm text-error mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div data-pay-field="hourly" class="hidden">
-                            <label class="block font-body-sm font-bold text-on-surface mb-2" for="hourly_rate">Hourly Rate ($)</label>
-                            <input
-                                class="w-full border @error('hourly_rate') border-error @else border-outline-variant @enderror rounded-lg p-3 text-body-md focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all"
-                                id="hourly_rate"
-                                name="hourly_rate"
-                                placeholder="e.g. 28.50"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value="{{ old('hourly_rate') }}"
-                            >
-                            <p class="font-body-sm text-secondary mt-1">Gross = hourly rate × hours worked.</p>
-                            @error('hourly_rate')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -446,27 +429,3 @@
 </div>
 
 @endsection
-
-@push('scripts')
-<script>
-(function () {
-    const payType = document.getElementById('pay_type');
-    if (!payType) return;
-
-    const syncPayFields = () => {
-        const isHourly = payType.value === 'hourly';
-        document.querySelectorAll('[data-pay-field="salary"]').forEach((el) => {
-            el.classList.toggle('hidden', isHourly);
-            el.querySelector('input')?.toggleAttribute('required', !isHourly);
-        });
-        document.querySelectorAll('[data-pay-field="hourly"]').forEach((el) => {
-            el.classList.toggle('hidden', !isHourly);
-            el.querySelector('input')?.toggleAttribute('required', isHourly);
-        });
-    };
-
-    payType.addEventListener('change', syncPayFields);
-    syncPayFields();
-})();
-</script>
-@endpush

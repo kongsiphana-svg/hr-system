@@ -29,7 +29,7 @@ class Employee extends Model
     /**
      * Valid values for the `pay_type` column (used by payroll generation).
      */
-    public const PAY_TYPES = ['salary', 'hourly'];
+    public const PAY_TYPES = ['salary'];
 
     /**
      * Valid values for the `work_location` column.

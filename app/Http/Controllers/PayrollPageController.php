@@ -93,6 +93,7 @@ class PayrollPageController extends Controller
                 'avatar' => 'bg-indigo-600',
                 'base_salary' => (float) $payroll->base_salary,
                 'hours_worked' => (float) $payroll->hours_worked,
+                'standard_hours' => (int) ($emp?->standard_hours ?: 160),
                 'approved_leave_days' => (float) $payroll->approved_leave_days,
                 'overtime_hours' => (float) $payroll->overtime_hours,
                 'allowances' => (float) $payroll->allowances,

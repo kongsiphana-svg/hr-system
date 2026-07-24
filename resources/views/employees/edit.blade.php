@@ -399,16 +399,10 @@
                                 @error('standard_hours')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
                             </div>
 
-                            <div class="space-y-1.5" data-pay-field="salary">
+                            <div class="space-y-1.5">
                                 <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="salary">Monthly Base Salary ($)</label>
-                                <input class="w-full px-3 py-2 border @error('salary') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="salary" name="salary" type="number" min="0" step="0.01" value="{{ old('salary', $employee->salary ?? $employee->base_salary) }}">
+                                <input class="w-full px-3 py-2 border @error('salary') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="salary" name="salary" type="number" min="0" step="0.01" value="{{ old('salary', $employee->salary ?? $employee->base_salary) }}" required>
                                 @error('salary')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
-                            </div>
-
-                            <div class="space-y-1.5 {{ $selectedPayType === 'hourly' ? '' : 'hidden' }}" data-pay-field="hourly">
-                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="hourly_rate">Hourly Rate ($)</label>
-                                <input class="w-full px-3 py-2 border @error('hourly_rate') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="hourly_rate" name="hourly_rate" type="number" min="0" step="0.01" value="{{ old('hourly_rate', $employee->hourly_rate) }}">
-                                @error('hourly_rate')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
                             </div>
 
                             <div class="space-y-1.5">
@@ -468,25 +462,5 @@
             reader.readAsDataURL(file);
         }
     });
-
-    (function () {
-        const payType = document.getElementById('pay_type');
-        if (!payType) return;
-
-        const syncPayFields = () => {
-            const isHourly = payType.value === 'hourly';
-            document.querySelectorAll('[data-pay-field="salary"]').forEach((el) => {
-                el.classList.toggle('hidden', isHourly);
-                el.querySelector('input')?.toggleAttribute('required', !isHourly);
-            });
-            document.querySelectorAll('[data-pay-field="hourly"]').forEach((el) => {
-                el.classList.toggle('hidden', !isHourly);
-                el.querySelector('input')?.toggleAttribute('required', isHourly);
-            });
-        };
-
-        payType.addEventListener('change', syncPayFields);
-        syncPayFields();
-    })();
 </script>
 @endpush

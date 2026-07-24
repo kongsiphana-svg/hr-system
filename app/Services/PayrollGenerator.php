@@ -35,31 +35,63 @@ class PayrollGenerator
         $baseSalary = $this->resolveBaseSalary($employee);
         $hoursWorked = $this->resolveAttendanceHours($employee, $periodStart, $periodEnd);
         $leaveSummary = $this->resolveApprovedLeave($employee, $periodStart, $periodEnd);
-        $standardHours = max(1, (float) ($employee->standard_hours ?: 160));
 
-        $overtimeHours = max(0, round($hoursWorked - $standardHours, 2));
-        $hourlyRate = $this->resolveHourlyRate($employee, $baseSalary, $standardHours);
-        $overtimePay = round($overtimeHours * $hourlyRate * 1.5, 2);
-        $allowances = round((float) ($employee->allowances ?? 0), 2);
-
-        // Gross: base (or hours × rate) + allowances + overtime
-        if (($employee->pay_type ?? 'salary') === 'hourly') {
-            $grossPay = round(($hourlyRate * $hoursWorked) + $allowances + $overtimePay, 2);
+        if ($employee->standard_hours > 0) {
+            $standardHours = (float) $employee->standard_hours;
         } else {
-            $grossPay = round($baseSalary + $allowances + $overtimePay, 2);
+            $standardHours = 160;
         }
 
-        $standardDeductions = round(
-            ($grossPay * (float) ($employee->deduction_rate ?? 0)) + (float) ($employee->fixed_deductions ?? 0),
-            2
-        );
+        $overtimeHours = round($hoursWorked - $standardHours, 2);
+        if ($overtimeHours < 0) {
+            $overtimeHours = 0;
+        }
+
+        // Hourly rate is only used to calculate overtime pay (1.5x).
+        $hourlyRate = round($baseSalary / $standardHours, 2);
+        $overtimePay = round($overtimeHours * $hourlyRate * 1.5, 2);
+
+        if ($employee->allowances !== null) {
+            $allowances = round((float) $employee->allowances, 2);
+        } else {
+            $allowances = 0;
+        }
+
+        // Salary employees: base salary + allowances + overtime
+        $grossPay = round($baseSalary + $allowances + $overtimePay, 2);
+
+        if ($employee->deduction_rate !== null) {
+            $deductionRate = (float) $employee->deduction_rate;
+        } else {
+            $deductionRate = 0;
+        }
+
+        if ($employee->fixed_deductions !== null) {
+            $fixedDeductions = (float) $employee->fixed_deductions;
+        } else {
+            $fixedDeductions = 0;
+        }
+
+        $standardDeductions = round(($grossPay * $deductionRate) + $fixedDeductions, 2);
 
         $workingDays = $this->workingDaysInPeriod($periodStart, $periodEnd);
-        $dailyRate = $workingDays > 0 ? round($baseSalary / $workingDays, 2) : 0;
+        if ($workingDays > 0) {
+            $dailyRate = round($baseSalary / $workingDays, 2);
+        } else {
+            $dailyRate = 0;
+        }
+        
+        // more future improvement
         $unpaidLeaveDeduction = round($leaveSummary['unpaid_days'] * $dailyRate, 2);
 
+
+        
         $deductions = round($standardDeductions + $unpaidLeaveDeduction, 2);
-        $netPay = round(max(0, $grossPay - $deductions), 2);
+
+        $netPay = round($grossPay - $deductions, 2);
+        if ($netPay < 0) {
+            $netPay = 0;
+        }
 
         return Payroll::updateOrCreate(
             [
@@ -95,23 +127,15 @@ class PayrollGenerator
 
     private function resolveBaseSalary(Employee $employee): float
     {
-        $base = (float) ($employee->base_salary ?: $employee->salary ?: 0);
-
-        if ($base <= 0 && ($employee->pay_type ?? '') === 'hourly') {
-            $hours = (float) ($employee->standard_hours ?: 160);
-            $base = round((float) $employee->hourly_rate * $hours, 2);
+        if ($employee->base_salary > 0) {
+            $base = (float) $employee->base_salary;
+        } elseif ($employee->salary > 0) {
+            $base = (float) $employee->salary;
+        } else {
+            $base = 0;
         }
 
         return round($base, 2);
-    }
-
-    private function resolveHourlyRate(Employee $employee, float $baseSalary, float $standardHours): float
-    {
-        if (($employee->pay_type ?? '') === 'hourly' && (float) $employee->hourly_rate > 0) {
-            return round((float) $employee->hourly_rate, 2);
-        }
-
-        return round($baseSalary / max(1, $standardHours), 2);
     }
 
     /**
@@ -127,7 +151,11 @@ class PayrollGenerator
             ->get();
 
         if ($schedules->isEmpty()) {
-            return round((float) ($employee->standard_hours ?: 160), 2);
+            if ($employee->standard_hours > 0) {
+                return round((float) $employee->standard_hours, 2);
+            }
+
+            return 160;
         }
 
         $total = $schedules->sum(function (Schedule $schedule) {
@@ -152,7 +180,12 @@ class PayrollGenerator
      */
     private function resolveApprovedLeave(Employee $employee, Carbon $start, Carbon $end): array
     {
-        $email = trim((string) ($employee->email ?? ''));
+        if ($employee->email !== null) {
+            $email = trim((string) $employee->email);
+        } else {
+            $email = '';
+        }
+
         $name = trim((string) $employee->name);
 
         if ($email === '' && $name === '') {
@@ -237,7 +270,11 @@ class PayrollGenerator
             }
         }
 
-        return max(1, $days);
+        if ($days < 1) {
+            return 1;
+        }
+
+        return $days;
     }
 
     private function normalizeTime(mixed $value): string
@@ -248,6 +285,10 @@ class PayrollGenerator
 
         $raw = (string) $value;
 
-        return strlen($raw) === 5 ? $raw.':00' : substr($raw, 0, 8);
+        if (strlen($raw) === 5) {
+            return $raw.':00';
+        }
+
+        return substr($raw, 0, 8);
     }
 }

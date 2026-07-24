@@ -548,8 +548,7 @@ class EmployeeController extends Controller
     {
         return [
             'pay_type' => ['required', 'in:' . implode(',', Employee::PAY_TYPES)],
-            'salary' => ['nullable', 'numeric', 'min:0', 'required_if:pay_type,salary'],
-            'hourly_rate' => ['nullable', 'numeric', 'min:0', 'required_if:pay_type,hourly'],
+            'salary' => ['required', 'numeric', 'min:0'],
             'standard_hours' => ['required', 'integer', 'min:1', 'max:744'],
             'fixed_start_time' => ['nullable', 'string', 'regex:/^\d{2}:\d{2}$/', 'max:5'],
             'fixed_end_time' => ['nullable', 'string', 'regex:/^\d{2}:\d{2}$/', 'max:5'],
@@ -569,31 +568,56 @@ class EmployeeController extends Controller
      */
     protected function normalizePayrollFields(array $data): array
     {
-        $payType = $data['pay_type'] ?? 'salary';
-        $standardHours = (int) ($data['standard_hours'] ?? 160);
+        $data['pay_type'] = 'salary';
 
-        $data['standard_hours'] = max(1, $standardHours);
-        $data['allowances'] = round((float) ($data['allowances'] ?? 0), 2);
-        $data['fixed_deductions'] = round((float) ($data['fixed_deductions'] ?? 0), 2);
+        if (isset($data['standard_hours'])) {
+            $standardHours = (int) $data['standard_hours'];
+        } else {
+            $standardHours = 160;
+        }
+
+        if ($standardHours < 1) {
+            $standardHours = 1;
+        }
+
+        $data['standard_hours'] = $standardHours;
+
+        if (isset($data['allowances'])) {
+            $data['allowances'] = round((float) $data['allowances'], 2);
+        } else {
+            $data['allowances'] = 0;
+        }
+
+        if (isset($data['fixed_deductions'])) {
+            $data['fixed_deductions'] = round((float) $data['fixed_deductions'], 2);
+        } else {
+            $data['fixed_deductions'] = 0;
+        }
 
         if (array_key_exists('deduction_percent', $data)) {
-            $data['deduction_rate'] = round(((float) ($data['deduction_percent'] ?? 0)) / 100, 4);
+            if (isset($data['deduction_percent'])) {
+                $percent = (float) $data['deduction_percent'];
+            } else {
+                $percent = 0;
+            }
+
+            $data['deduction_rate'] = round($percent / 100, 4);
             unset($data['deduction_percent']);
         } elseif (! array_key_exists('deduction_rate', $data)) {
             $data['deduction_rate'] = 0.1000;
         }
 
-        if ($payType === 'hourly') {
-            $hourlyRate = round((float) ($data['hourly_rate'] ?? 0), 2);
-            $data['hourly_rate'] = $hourlyRate;
-            $data['base_salary'] = round($hourlyRate * $data['standard_hours'], 2);
-            $data['salary'] = $data['base_salary'];
+        if (isset($data['salary'])) {
+            $salary = round((float) $data['salary'], 2);
+        } elseif (isset($data['base_salary'])) {
+            $salary = round((float) $data['base_salary'], 2);
         } else {
-            $salary = round((float) ($data['salary'] ?? $data['base_salary'] ?? 0), 2);
-            $data['salary'] = $salary;
-            $data['base_salary'] = $salary;
-            $data['hourly_rate'] = null;
+            $salary = 0;
         }
+
+        $data['salary'] = $salary;
+        $data['base_salary'] = $salary;
+        $data['hourly_rate'] = null;
 
         return $data;
     }
