@@ -1,25 +1,25 @@
 @php
     $searchConfig = match (true) {
-        request()->routeIs('payroll.*') => [
-            'action' => route('payroll.index'),
+        request()->routeIs('admin.payroll.*') => [
+            'action' => route('admin.payroll.index'),
             'name' => 'search',
             'placeholder' => 'Search payroll records...',
             'value' => request('search'),
         ],
-        request()->routeIs('schedule.*') => [
-            'action' => route('schedule.index'),
+        request()->routeIs('admin.schedule.*') => [
+            'action' => route('admin.schedule.index'),
             'name' => 'search',
             'placeholder' => 'Search schedules...',
             'value' => request('search'),
         ],
-        request()->routeIs('leave-requests.*') => [
-            'action' => route('leave-requests.index'),
+        request()->routeIs('admin.leave-requests.*', 'admin.leaves.*') => [
+            'action' => route('admin.leave-requests.index'),
             'name' => 'search',
             'placeholder' => 'Search leave requests...',
             'value' => request('search'),
         ],
         default => [
-            'action' => route('employees.index'),
+            'action' => route('admin.employees.index'),
             'name' => 'search',
             'placeholder' => 'Search employees...',
             'value' => request('search'),
@@ -30,7 +30,7 @@
 <header class="fixed top-0 right-0 left-[260px] h-16 bg-surface flex justify-between items-center px-margin-desktop border-b border-surface-container-high z-40">
     <div class="flex items-center gap-4 flex-1">
         <form action="{{ $searchConfig['action'] }}" method="GET" class="relative w-full max-w-md">
-            @if (request()->routeIs('employees.*'))
+            @if (request()->routeIs('admin.employees.*'))
                 @if (request('department'))
                     <input type="hidden" name="department" value="{{ request('department') }}">
                 @endif
@@ -54,7 +54,7 @@
             <button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors" type="button" title="Notifications">
                 <span class="material-symbols-outlined">notifications</span>
             </button>
-            <a href="{{ route('settings.index') }}" class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors" title="Settings">
+            <a href="{{ route('admin.settings.index') }}" class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors" title="Settings">
                 <span class="material-symbols-outlined">settings</span>
             </a>
         </div>

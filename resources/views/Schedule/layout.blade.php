@@ -23,9 +23,9 @@
             <div class="flex items-center gap-1 overflow-x-auto py-2">
                 @php
                     $scheduleTabs = [
-                        ['label' => 'Work Schedule', 'route' => 'schedule.index'],
-                        ['label' => 'Calendar', 'route' => 'schedule.calendar'],
-                        ['label' => 'Add Shift', 'route' => 'schedule.create'],
+                        ['label' => 'Work Schedule', 'route' => 'admin.schedule.index'],
+                        ['label' => 'Calendar', 'route' => 'admin.schedule.calendar'],
+                        ['label' => 'Add Shift', 'route' => 'admin.schedule.create'],
                     ];
                 @endphp
                 @foreach ($scheduleTabs as $tab)

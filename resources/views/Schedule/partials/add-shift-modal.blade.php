@@ -18,7 +18,7 @@
         <form
             id="add-shift-form"
             class="space-y-5 p-6"
-            action="{{ route('schedules.store') }}"
+            action="{{ route('admin.schedules.store') }}"
             method="post"
             data-ajax="true"
         >

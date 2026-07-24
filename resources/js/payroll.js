@@ -1,7 +1,22 @@
 /**
- * Payroll frontend helpers.
- * Backend routes are placeholders — wire these URLs when the API is ready.
+ * Payroll workflow UI
+ * Generate → Draft → Review → Pending Review → Approve → Payslip → Mark Paid
  */
+
+const STATUS_BADGES = {
+    draft: 'bg-slate-100 text-slate-700 border-slate-200',
+    pending_review: 'bg-amber-50 text-amber-800 border-amber-200',
+    approved: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    paid: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+};
+
+const STATUS_LABELS = {
+    draft: 'Draft',
+    pending_review: 'Pending Review',
+    approved: 'Approved',
+    paid: 'Paid',
+};
+
 const appEl = () => document.getElementById('payroll-app');
 
 export function getPayrollConfig() {
@@ -11,6 +26,9 @@ export function getPayrollConfig() {
         processUrl: el?.dataset.processUrl ?? '/api/payroll/process',
         listUrl: el?.dataset.listUrl ?? '/api/payroll',
         payslipUrlTemplate: el?.dataset.payslipUrlTemplate ?? '/api/payroll/:id/payslip',
+        reviewUrlTemplate: el?.dataset.reviewUrlTemplate ?? '/api/payroll/:id/review',
+        approveUrlTemplate: el?.dataset.approveUrlTemplate ?? '/api/payroll/:id/approve',
+        markPaidUrlTemplate: el?.dataset.markPaidUrlTemplate ?? '/api/payroll/:id/mark-paid',
     };
 }
 
@@ -28,22 +46,15 @@ function setButtonLoading(button, loading) {
     const label = button.querySelector('[data-label]');
     const spinner = button.querySelector('[data-spinner]');
     if (label) label.classList.toggle('opacity-0', loading);
-    if (spinner) spinner.classList.toggle('hidden', !loading);
+    if (spinner) {
+        spinner.classList.toggle('hidden', !loading);
+        spinner.classList.toggle('flex', loading);
+    }
 }
 
-/**
- * POST /api/payroll/process
- * Body: { pay_period: "2026-07", department_id?: "engineering" }
- */
-export async function processPayroll(payPeriod, departmentId = '') {
-    const { csrf, processUrl } = getPayrollConfig();
-
-    const body = { pay_period: payPeriod };
-    if (departmentId) {
-        body.department_id = departmentId;
-    }
-
-    const response = await fetch(processUrl, {
+async function apiPost(url, body = null) {
+    const { csrf } = getPayrollConfig();
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -51,63 +62,99 @@ export async function processPayroll(payPeriod, departmentId = '') {
             'X-CSRF-TOKEN': csrf,
             'X-Requested-With': 'XMLHttpRequest',
         },
-        body: JSON.stringify(body),
+        body: body ? JSON.stringify(body) : JSON.stringify({}),
     });
 
+    const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Payroll process failed (${response.status})`);
+        throw new Error(payload.message || `Request failed (${response.status})`);
     }
-
-    return response.json();
+    return payload;
 }
 
-/**
- * GET /api/payroll?pay_period=YYYY-MM&department_id=
- */
-export async function fetchPayrollList(payPeriod, departmentId = '') {
-    const { csrf, listUrl } = getPayrollConfig();
-    const url = new URL(listUrl, window.location.origin);
-    url.searchParams.set('pay_period', payPeriod);
-    if (departmentId) {
-        url.searchParams.set('department_id', departmentId);
-    }
-
-    const response = await fetch(url, {
-        headers: {
-            Accept: 'application/json',
-            'X-CSRF-TOKEN': csrf,
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error(`Failed to load payroll (${response.status})`);
-    }
-
-    return response.json();
+export async function processPayroll(payPeriod, departmentId = '', search = '') {
+    const { processUrl } = getPayrollConfig();
+    const body = { pay_period: payPeriod };
+    if (departmentId) body.department_id = departmentId;
+    if (search) body.search = search;
+    return apiPost(processUrl, body);
 }
 
-/**
- * GET /api/payroll/:id/payslip
- */
-export async function fetchPayslip(payrollId) {
-    const { csrf, payslipUrlTemplate } = getPayrollConfig();
-    const url = payslipUrlTemplate.replace(':id', encodeURIComponent(payrollId));
+function statusBadgeHtml(status) {
+    const label = STATUS_LABELS[status] || status;
+    const classes = STATUS_BADGES[status] || STATUS_BADGES.draft;
+    return `<span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${classes}" data-status-badge>${label}</span>`;
+}
 
-    const response = await fetch(url, {
-        headers: {
-            Accept: 'application/json',
-            'X-CSRF-TOKEN': csrf,
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error(`Failed to load payslip (${response.status})`);
+function actionsHtml(status) {
+    if (status === 'draft') {
+        return `<button type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-action="review">Review</button>`;
     }
+    if (status === 'pending_review') {
+        return `
+            <button type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-action="review">Review</button>
+            <button type="button" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700" data-action="approve">Approve</button>`;
+    }
+    if (status === 'approved') {
+        return `
+            <button type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-action="view-payslip">View Payslip</button>
+            <button type="button" class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700" data-action="mark-paid">Mark as Paid</button>`;
+    }
+    return `<button type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-action="view-payslip">View Payslip</button>`;
+}
 
-    return response.json();
+function initialsFromName(name = '') {
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    return parts
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase() || '')
+        .join('') || '?';
+}
+
+function rowDataset(row) {
+    return {
+        payrollId: row.id ?? '',
+        employeeId: row.employee_id ?? '',
+        employeeName: row.employee_name ?? row.name ?? '',
+        jobTitle: row.job_title ?? row.title ?? '',
+        department: row.department ?? row.department_id ?? '',
+        email: row.email ?? '',
+        baseSalary: row.base_salary ?? 0,
+        hoursWorked: row.hours_worked ?? row.hours ?? 0,
+        approvedLeaveDays: row.approved_leave_days ?? 0,
+        overtimeHours: row.overtime_hours ?? 0,
+        allowances: row.allowances ?? 0,
+        deductions: row.deductions ?? 0,
+        unpaidLeaveDeduction: row.unpaid_leave_deduction ?? 0,
+        grossPay: row.gross_pay ?? row.gross_salary ?? 0,
+        netPay: row.net_pay ?? row.net_salary ?? 0,
+        status: row.status ?? 'draft',
+        payPeriod: row.pay_period ?? '',
+    };
+}
+
+function applyRowDataset(tr, data) {
+    Object.entries({
+        payrollId: 'payrollId',
+        employeeId: 'employeeId',
+        employeeName: 'employeeName',
+        jobTitle: 'jobTitle',
+        department: 'department',
+        email: 'email',
+        baseSalary: 'baseSalary',
+        hoursWorked: 'hoursWorked',
+        approvedLeaveDays: 'approvedLeaveDays',
+        overtimeHours: 'overtimeHours',
+        allowances: 'allowances',
+        deductions: 'deductions',
+        unpaidLeaveDeduction: 'unpaidLeaveDeduction',
+        grossPay: 'grossPay',
+        netPay: 'netPay',
+        status: 'status',
+        payPeriod: 'payPeriod',
+    }).forEach(([datasetKey, sourceKey]) => {
+        tr.dataset[datasetKey] = data[sourceKey] ?? '';
+    });
 }
 
 function renderPayrollRows(tbody, rows) {
@@ -115,181 +162,189 @@ function renderPayrollRows(tbody, rows) {
 
     if (!rows?.length) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">
-                    No payroll records for this period yet. Click Process Payroll to calculate.
+            <tr data-empty-row>
+                <td colspan="9" class="px-5 py-10 text-center text-sm text-slate-500">
+                    No payroll records for this period yet. Set filters and click <strong>Generate Payroll</strong>.
                 </td>
             </tr>`;
         return;
     }
 
     tbody.innerHTML = rows
-        .map(
-            (row) => `
-        <tr
-            class="transition-colors hover:bg-slate-50/70"
-            data-payroll-id="${row.id ?? ''}"
-            data-employee-id="${row.employee_id ?? ''}"
-            data-employee-name="${row.employee_name ?? row.name ?? ''}"
-            data-base-salary="${row.base_salary ?? 0}"
-            data-allowances="${row.allowances ?? 0}"
-            data-deductions="${row.deductions ?? 0}"
-            data-net-pay="${row.net_pay ?? 0}"
-            data-job-title="${row.job_title ?? row.title ?? ''}"
-            data-department-id="${row.department_id ?? ''}"
-            data-pay-period="${row.pay_period ?? ''}"
-        >
+        .map((row) => {
+            const d = rowDataset(row);
+            return `
+        <tr class="transition-colors hover:bg-slate-50/70"
+            data-payroll-id="${d.payrollId}"
+            data-employee-id="${d.employeeId}"
+            data-employee-name="${d.employeeName}"
+            data-job-title="${d.jobTitle}"
+            data-department="${d.department}"
+            data-email="${d.email}"
+            data-base-salary="${d.baseSalary}"
+            data-hours-worked="${d.hoursWorked}"
+            data-approved-leave-days="${d.approvedLeaveDays}"
+            data-overtime-hours="${d.overtimeHours}"
+            data-allowances="${d.allowances}"
+            data-deductions="${d.deductions}"
+            data-unpaid-leave-deduction="${d.unpaidLeaveDeduction}"
+            data-gross-pay="${d.grossPay}"
+            data-net-pay="${d.netPay}"
+            data-status="${d.status}"
+            data-pay-period="${d.payPeriod}">
             <td class="px-5 py-4">
-                <p class="font-semibold text-slate-900">${row.employee_name ?? row.name ?? '—'}</p>
-                <p class="text-xs text-slate-500">${row.job_title ?? row.title ?? ''}</p>
+                <div class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">${initialsFromName(d.employeeName)}</span>
+                    <div>
+                        <p class="font-semibold text-slate-900">${d.employeeName || '—'}</p>
+                        <p class="text-xs text-slate-500">${d.jobTitle || ''}</p>
+                    </div>
+                </div>
             </td>
-            <td class="px-5 py-4 text-slate-700">${formatMoney(row.base_salary)}</td>
-            <td class="px-5 py-4 font-medium text-emerald-600">+${formatMoney(row.allowances)}</td>
-            <td class="px-5 py-4 font-medium text-red-500">-${formatMoney(row.deductions)}</td>
-            <td class="px-5 py-4 font-bold text-slate-900">${formatMoney(row.net_pay)}</td>
+            <td class="px-5 py-4 text-slate-700">${d.department || '—'}</td>
+            <td class="px-5 py-4 text-slate-700">${formatMoney(d.baseSalary)}</td>
+            <td class="px-5 py-4 text-slate-700">${Number(d.hoursWorked).toFixed(1)}h</td>
+            <td class="px-5 py-4 text-slate-700">${Number(d.approvedLeaveDays).toFixed(1)} days</td>
+            <td class="px-5 py-4 font-medium text-slate-900">${formatMoney(d.grossPay)}</td>
+            <td class="px-5 py-4 font-bold text-slate-900">${formatMoney(d.netPay)}</td>
+            <td class="px-5 py-4">${statusBadgeHtml(d.status)}</td>
             <td class="px-5 py-4 text-right">
-                <button
-                    type="button"
-                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                    data-action="view-payslip"
-                    data-payroll-id="${row.id ?? ''}"
-                    data-employee-id="${row.employee_id ?? ''}"
-                >
-                    View Payslip
-                </button>
+                <div class="inline-flex flex-wrap justify-end gap-2" data-actions>${actionsHtml(d.status)}</div>
             </td>
-        </tr>`
-        )
+        </tr>`;
+        })
         .join('');
 }
 
-function updateRowCount() {
-    const countEl = document.querySelector('[data-row-count]');
-    if (!countEl) return;
-    const visible = document.querySelectorAll('[data-payroll-table-body] tr[data-payroll-id]:not(.hidden)').length;
-    countEl.textContent = `${visible} employee${visible === 1 ? '' : 's'}`;
+function updateSummary(summary) {
+    if (!summary) return;
+    const map = {
+        total_gross: summary.total_gross_pay,
+        total_net: summary.total_net_pay ?? summary.net_disbursable,
+        total_deductions: summary.total_deductions,
+        employees_processed: summary.employees_count,
+    };
+
+    Object.entries(map).forEach(([key, value]) => {
+        const card = document.querySelector(`[data-summary-key="${key}"] [data-summary-value]`);
+        if (!card || value === undefined || value === null) return;
+        card.textContent = key === 'employees_processed' ? String(value) : formatMoney(value);
+    });
 }
 
-/**
- * Client-side department filter. Empty value = show all (default).
- * Backend can later filter via ?department_id= on GET /api/payroll
- */
-function filterByDepartment(departmentId = '') {
-    const rows = document.querySelectorAll('[data-payroll-table-body] tr[data-payroll-id]');
-    let emptyRow = document.querySelector('[data-payroll-table-body] tr[data-empty-filter]');
+function fillFromRow(modal, row) {
+    if (!modal || !row) return;
+    const set = (field, value) => {
+        const el = modal.querySelector(`[data-field="${field}"]`);
+        if (el) el.textContent = value;
+    };
 
-    rows.forEach((row) => {
-        const match = !departmentId || row.dataset.departmentId === departmentId;
-        row.classList.toggle('hidden', !match);
-    });
+    set('employee_name', row.dataset.employeeName || '—');
+    set('job_title', row.dataset.jobTitle || '—');
+    set('department', row.dataset.department || '—');
+    set('email', row.dataset.email || '—');
+    set('employee_id', row.dataset.employeeId || '—');
+    set('pay_period', row.dataset.payPeriod || document.getElementById('pay_period')?.selectedOptions?.[0]?.text || '—');
+    set('base_salary', formatMoney(row.dataset.baseSalary));
+    set('hours_worked', `${Number(row.dataset.hoursWorked || 0).toFixed(1)}h`);
+    set('approved_leave_days', `${Number(row.dataset.approvedLeaveDays || 0).toFixed(1)} days`);
+    set('overtime_hours', `${Number(row.dataset.overtimeHours || 0).toFixed(1)}h`);
+    set('allowances', formatMoney(row.dataset.allowances));
+    set('deductions', formatMoney(row.dataset.deductions));
+    set('unpaid_leave_deduction', formatMoney(row.dataset.unpaidLeaveDeduction));
+    set('gross_pay', formatMoney(row.dataset.grossPay));
+    set('net_pay', formatMoney(row.dataset.netPay));
 
-    const visibleCount = [...rows].filter((row) => !row.classList.contains('hidden')).length;
-
-    if (visibleCount === 0 && rows.length > 0) {
-        if (!emptyRow) {
-            const tbody = document.querySelector('[data-payroll-table-body]');
-            emptyRow = document.createElement('tr');
-            emptyRow.dataset.emptyFilter = 'true';
-            emptyRow.innerHTML = `
-                <td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">
-                    No employees found for this department.
-                </td>`;
-            tbody?.appendChild(emptyRow);
-        }
-        emptyRow.classList.remove('hidden');
-    } else if (emptyRow) {
-        emptyRow.classList.add('hidden');
+    const badge = modal.querySelector('[data-field="status_badge"]');
+    if (badge) {
+        const status = row.dataset.status || 'draft';
+        badge.className = `inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_BADGES[status] || STATUS_BADGES.draft}`;
+        badge.textContent = STATUS_LABELS[status] || status;
     }
 
-    updateRowCount();
-}
-
-function fillPayslipModal(row) {
-    const modal = document.getElementById('payslip-modal');
-    if (!modal || !row) return;
-
-    modal.querySelector('[data-field="employee_name"]').textContent = row.dataset.employeeName || '—';
-    modal.querySelector('[data-field="job_title"]').textContent = row.dataset.jobTitle || '—';
-    modal.querySelector('[data-field="pay_period"]').textContent = row.dataset.payPeriod || document.getElementById('pay_period')?.selectedOptions?.[0]?.text || '—';
-    modal.querySelector('[data-field="base_salary"]').textContent = formatMoney(row.dataset.baseSalary);
-    modal.querySelector('[data-field="allowances"]').textContent = formatMoney(row.dataset.allowances);
-    modal.querySelector('[data-field="deductions"]').textContent = formatMoney(row.dataset.deductions);
-    modal.querySelector('[data-field="net_pay"]').textContent = formatMoney(row.dataset.netPay);
-    modal.querySelector('[data-field="employee_id"]').textContent = row.dataset.employeeId || '—';
     modal.dataset.payrollId = row.dataset.payrollId || '';
+    modal.dataset.status = row.dataset.status || '';
 }
 
-function openPayslipModal() {
-    const modal = document.getElementById('payslip-modal');
+function openModal(id) {
+    const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.remove('hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('overflow-hidden');
 }
 
-function closePayslipModal() {
-    const modal = document.getElementById('payslip-modal');
+function closeModal(id) {
+    const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.add('hidden');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('overflow-hidden');
 }
 
-async function handleProcessClick(event) {
-    const button = event.currentTarget;
+function syncRowFromPayload(row, data) {
+    if (!row || !data) return;
+    const mapped = rowDataset(data);
+    applyRowDataset(row, mapped);
+
+    const statusCell = row.querySelector('[data-status-badge]')?.parentElement;
+    if (statusCell) statusCell.innerHTML = statusBadgeHtml(mapped.status);
+
+    const actions = row.querySelector('[data-actions]');
+    if (actions) actions.innerHTML = actionsHtml(mapped.status);
+
+    row.querySelector('[data-field="gross_pay"]')?.replaceChildren();
+}
+
+async function handleGenerateClick(button) {
     const periodSelect = document.getElementById('pay_period');
     const departmentSelect = document.getElementById('department_id');
+    const searchInput = document.getElementById('search');
     const statusEl = document.getElementById('payroll-process-status');
-    const tbody = document.querySelector('[data-payroll-table-body]');
     const payPeriod = periodSelect?.value;
-    const departmentId = departmentSelect?.value || '';
 
     if (!payPeriod) {
-        statusEl && (statusEl.textContent = 'Please select a pay period first.');
+        if (statusEl) {
+            statusEl.textContent = 'Please select a payroll period first.';
+            statusEl.className = 'text-sm text-red-600';
+        }
         periodSelect?.focus();
         return;
     }
 
     setButtonLoading(button, true);
     if (statusEl) {
-        statusEl.textContent = 'Processing payroll…';
+        statusEl.textContent = 'Generating payroll from attendance & approved leave…';
         statusEl.className = 'text-sm text-slate-500';
     }
 
     try {
-        let payload;
-        try {
-            payload = await processPayroll(payPeriod, departmentId);
-        } catch (apiError) {
-            console.warn('[Payroll] API not available yet — using demo refresh.', apiError.message);
-            payload = { data: null, demo: true, message: 'Demo mode: connect POST /api/payroll/process when ready.' };
-        }
+        const payload = await processPayroll(
+            payPeriod,
+            departmentSelect?.value || '',
+            searchInput?.value || ''
+        );
 
-        if (payload?.data) {
-            renderPayrollRows(tbody, payload.data);
-        } else {
-            try {
-                const list = await fetchPayrollList(payPeriod, departmentId);
-                renderPayrollRows(tbody, list.data ?? list);
-            } catch {
-                document.querySelectorAll('[data-payroll-table-body] tr').forEach((tr) => {
-                    tr.dataset.payPeriod = payPeriod;
-                });
-            }
-        }
-
-        filterByDepartment(departmentId);
+        const tbody = document.querySelector('[data-payroll-table-body]');
+        renderPayrollRows(tbody, payload.data || []);
+        updateSummary(payload.summary);
 
         if (statusEl) {
-            const label = periodSelect.selectedOptions[0]?.text || payPeriod;
-            statusEl.textContent = payload?.demo
-                ? `Ready for ${label}. Backend API not connected yet — UI flow works.`
-                : `Payroll processed successfully for ${label}.`;
+            statusEl.textContent = payload.message || 'Payroll generated as Draft.';
             statusEl.className = 'text-sm text-emerald-600';
         }
+
+        // Keep URL filters in sync after generate
+        const url = new URL(window.location.href);
+        url.searchParams.set('pay_period', payPeriod);
+        if (departmentSelect?.value) url.searchParams.set('department_id', departmentSelect.value);
+        else url.searchParams.delete('department_id');
+        if (searchInput?.value) url.searchParams.set('search', searchInput.value);
+        else url.searchParams.delete('search');
+        window.history.replaceState({}, '', url);
     } catch (error) {
         if (statusEl) {
-            statusEl.textContent = error.message || 'Something went wrong while processing payroll.';
+            statusEl.textContent = error.message || 'Failed to generate payroll.';
             statusEl.className = 'text-sm text-red-600';
         }
     } finally {
@@ -297,48 +352,139 @@ async function handleProcessClick(event) {
     }
 }
 
-function initPayrollProcessingPage() {
-    const processBtn = document.getElementById('btn-process-payroll');
-    if (!processBtn) return;
+async function transitionPayroll(row, action) {
+    const { reviewUrlTemplate, approveUrlTemplate, markPaidUrlTemplate } = getPayrollConfig();
+    const id = row.dataset.payrollId;
+    if (!id) throw new Error('Missing payroll id.');
 
-    processBtn.addEventListener('click', handleProcessClick);
+    const templates = {
+        review: reviewUrlTemplate,
+        approve: approveUrlTemplate,
+        'mark-paid': markPaidUrlTemplate,
+    };
 
-    document.getElementById('pay_period')?.addEventListener('change', (e) => {
+    const url = (templates[action] || '').replace(':id', encodeURIComponent(id));
+    if (!url) throw new Error('Unknown action.');
+
+    const payload = await apiPost(url);
+    syncRowFromPayload(row, payload.data);
+    return payload;
+}
+
+function openReviewModal(row) {
+    const modal = document.getElementById('review-modal');
+    fillFromRow(modal, row);
+    const status = row.dataset.status;
+    document.getElementById('btn-submit-review')?.classList.toggle('hidden', status !== 'draft');
+    document.getElementById('btn-approve-from-review')?.classList.toggle('hidden', status !== 'pending_review' && status !== 'draft');
+    openModal('review-modal');
+}
+
+function openPayslipModal(row) {
+    const modal = document.getElementById('payslip-modal');
+    fillFromRow(modal, row);
+    openModal('payslip-modal');
+}
+
+function findRowByPayrollId(id) {
+    return document.querySelector(`[data-payroll-table-body] tr[data-payroll-id="${id}"]`);
+}
+
+function initPayrollPage() {
+    if (!appEl()) return;
+
+    document.getElementById('btn-generate-payroll')?.addEventListener('click', (e) => {
+        handleGenerateClick(e.currentTarget);
+    });
+
+    // Also support legacy process page button
+    document.getElementById('btn-process-payroll')?.addEventListener('click', (e) => {
+        handleGenerateClick(e.currentTarget);
+    });
+
+    document.addEventListener('click', async (e) => {
+        const actionBtn = e.target.closest('[data-action]');
+        if (!actionBtn) return;
+
+        const action = actionBtn.dataset.action;
+        const row = actionBtn.closest('tr[data-payroll-id]') || findRowByPayrollId(document.getElementById('review-modal')?.dataset.payrollId);
         const statusEl = document.getElementById('payroll-process-status');
-        if (statusEl) {
-            statusEl.textContent = `Selected period: ${e.target.selectedOptions[0]?.text || e.target.value}`;
-            statusEl.className = 'text-sm text-slate-500';
+
+        try {
+            if (action === 'review' && row) {
+                openReviewModal(row);
+                return;
+            }
+
+            if (action === 'view-payslip' && row) {
+                openPayslipModal(row);
+                return;
+            }
+
+            if (action === 'close-review') {
+                closeModal('review-modal');
+                return;
+            }
+
+            if (action === 'close-payslip') {
+                closeModal('payslip-modal');
+                return;
+            }
+
+            if (action === 'submit-review') {
+                const target = findRowByPayrollId(document.getElementById('review-modal')?.dataset.payrollId);
+                if (!target) return;
+                actionBtn.disabled = true;
+                const payload = await transitionPayroll(target, 'review');
+                closeModal('review-modal');
+                if (statusEl) {
+                    statusEl.textContent = payload.message || 'Submitted for review.';
+                    statusEl.className = 'text-sm text-emerald-600';
+                }
+                actionBtn.disabled = false;
+                return;
+            }
+
+            if (action === 'approve' || action === 'approve-from-review') {
+                const target = row || findRowByPayrollId(document.getElementById('review-modal')?.dataset.payrollId);
+                if (!target) return;
+                actionBtn.disabled = true;
+                const payload = await transitionPayroll(target, 'approve');
+                closeModal('review-modal');
+                if (statusEl) {
+                    statusEl.textContent = payload.message || 'Payroll approved.';
+                    statusEl.className = 'text-sm text-emerald-600';
+                }
+                actionBtn.disabled = false;
+                return;
+            }
+
+            if (action === 'mark-paid' && row) {
+                actionBtn.disabled = true;
+                const payload = await transitionPayroll(row, 'mark-paid');
+                if (statusEl) {
+                    statusEl.textContent = payload.message || 'Marked as paid.';
+                    statusEl.className = 'text-sm text-emerald-600';
+                }
+                actionBtn.disabled = false;
+            }
+        } catch (error) {
+            if (statusEl) {
+                statusEl.textContent = error.message || 'Action failed.';
+                statusEl.className = 'text-sm text-red-600';
+            }
+            actionBtn.disabled = false;
         }
     });
 
-    document.getElementById('department_id')?.addEventListener('change', (e) => {
-        filterByDepartment(e.target.value || '');
-    });
-
-    // Apply department filter on load if a value is already selected
-    filterByDepartment(document.getElementById('department_id')?.value || '');
-
-    document.addEventListener('click', (e) => {
-        const viewBtn = e.target.closest('[data-action="view-payslip"]');
-        if (viewBtn) {
-            const row = viewBtn.closest('tr');
-            fillPayslipModal(row);
-            openPayslipModal();
-            return;
-        }
-
-        if (e.target.closest('[data-action="close-payslip"]')) {
-            closePayslipModal();
-        }
-    });
-
-    document.getElementById('btn-print-payslip')?.addEventListener('click', () => {
-        window.print();
-    });
+    document.getElementById('btn-print-payslip')?.addEventListener('click', () => window.print());
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closePayslipModal();
+        if (e.key === 'Escape') {
+            closeModal('review-modal');
+            closeModal('payslip-modal');
+        }
     });
 }
 
-document.addEventListener('DOMContentLoaded', initPayrollProcessingPage);
+document.addEventListener('DOMContentLoaded', initPayrollPage);

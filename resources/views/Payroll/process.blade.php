@@ -15,97 +15,8 @@
 @endpush
 
 @section('payroll')
-    @php
-        /**
-         * Demo rows — replace with $payrolls from controller when backend is ready.
-         * Expected fields: id, employee_id, employee_name, job_title, department_id,
-         * base_salary, allowances, deductions, net_pay, pay_period
-         */
-        $payPeriods = [
-            '2026-07' => 'July 2026',
-            '2026-06' => 'June 2026',
-            '2026-05' => 'May 2026',
-            '2023-10' => 'October 2023',
-        ];
-
-        $departments = [
-            '' => 'All Departments',
-            'design' => 'Design',
-            'engineering' => 'Engineering',
-            'marketing' => 'Marketing',
-        ];
-
-        $selectedPeriod = request('pay_period', '2026-07');
-        $selectedDepartment = request('department_id', '');
-
-        $payrolls = [
-            [
-                'id' => 101,
-                'employee_id' => 1,
-                'employee_name' => 'Jane Doe',
-                'job_title' => 'Product Designer',
-                'department_id' => 'design',
-                'base_salary' => 8500.00,
-                'allowances' => 450.00,
-                'deductions' => 1200.00,
-                'net_pay' => 7750.00,
-                'pay_period' => $selectedPeriod,
-            ],
-            [
-                'id' => 102,
-                'employee_id' => 2,
-                'employee_name' => 'Mark Smith',
-                'job_title' => 'Frontend Engineer',
-                'department_id' => 'engineering',
-                'base_salary' => 7200.00,
-                'allowances' => 300.00,
-                'deductions' => 980.00,
-                'net_pay' => 6520.00,
-                'pay_period' => $selectedPeriod,
-            ],
-            [
-                'id' => 103,
-                'employee_id' => 3,
-                'employee_name' => 'Amelia Lewis',
-                'job_title' => 'Marketing Lead',
-                'department_id' => 'marketing',
-                'base_salary' => 9100.00,
-                'allowances' => 600.00,
-                'deductions' => 1450.00,
-                'net_pay' => 8250.00,
-                'pay_period' => $selectedPeriod,
-            ],
-            [
-                'id' => 104,
-                'employee_id' => 4,
-                'employee_name' => 'Robert Wilson',
-                'job_title' => 'Backend Engineer',
-                'department_id' => 'engineering',
-                'base_salary' => 8800.00,
-                'allowances' => 250.00,
-                'deductions' => 1100.00,
-                'net_pay' => 7950.00,
-                'pay_period' => $selectedPeriod,
-            ],
-            [
-                'id' => 105,
-                'employee_id' => 5,
-                'employee_name' => 'Elena Cruz',
-                'job_title' => 'UX Researcher',
-                'department_id' => 'design',
-                'base_salary' => 6950.00,
-                'allowances' => 400.00,
-                'deductions' => 850.00,
-                'net_pay' => 6500.00,
-                'pay_period' => $selectedPeriod,
-            ],
-        ];
-
-        $money = fn (float $amount): string => '$' . number_format($amount, 2);
-    @endphp
-
     <div class="mb-6">
-        <a href="{{ route('payroll.index') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800">
+        <a href="{{ route('admin.payroll.index') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800">
             @include('Payroll.partials.icons', ['name' => 'chevron-left', 'class' => 'h-4 w-4'])
             Back to Payroll Management
         </a>
@@ -123,7 +34,7 @@
         id="payroll-process-form"
         class="mb-6 rounded-xl border border-slate-200 bg-white p-5"
         method="GET"
-        action="{{ route('payroll.process') }}"
+        action="{{ route('admin.payroll.process') }}"
         onsubmit="return false;"
         data-action="payroll-process"
     >
@@ -142,7 +53,7 @@
                         required
                     >
                         @foreach ($payPeriods as $value => $label)
-                            <option value="{{ $value }}" @selected($value === $selectedPeriod)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected($value === $payPeriod)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -158,7 +69,7 @@
                         data-filter="department"
                     >
                         @foreach ($departments as $value => $label)
-                            <option value="{{ $value }}" @selected($value === $selectedDepartment)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected($value === request('department_id', ''))>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -166,7 +77,7 @@
 
             <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
                 <p id="payroll-process-status" class="text-sm text-slate-500" role="status" aria-live="polite">
-                    Ready to process {{ $payPeriods[$selectedPeriod] ?? $selectedPeriod }}.
+                    Ready to process {{ $payPeriods[$payPeriod] ?? $payPeriod }}.
                 </p>
                 <button
                     type="button"
@@ -197,7 +108,7 @@
                 <p class="text-xs text-slate-500">Results for the selected pay period</p>
             </div>
             <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600" data-row-count>
-                {{ count($payrolls) }} employees
+                {{ $payrolls->total() ?? 0 }} employees
             </span>
         </div>
 
@@ -214,35 +125,44 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100" data-payroll-table-body>
-                    @forelse ($payrolls as $row)
+                    @forelse ($payrolls as $payroll)
+                        @php
+                            $emp = $payroll->employee;
+                        @endphp
                         <tr
                             class="transition-colors hover:bg-slate-50/70"
-                            data-payroll-id="{{ $row['id'] }}"
-                            data-employee-id="{{ $row['employee_id'] }}"
-                            data-employee-name="{{ $row['employee_name'] }}"
-                            data-job-title="{{ $row['job_title'] }}"
-                            data-base-salary="{{ $row['base_salary'] }}"
-                            data-allowances="{{ $row['allowances'] }}"
-                            data-deductions="{{ $row['deductions'] }}"
-                            data-net-pay="{{ $row['net_pay'] }}"
-                            data-pay-period="{{ $row['pay_period'] }}"
+                            data-payroll-id="{{ $payroll->id }}"
+                            data-employee-id="{{ $emp?->id }}"
+                            data-employee-name="{{ $emp?->name ?? '—' }}"
+                            data-job-title="{{ $emp?->job_title ?? '' }}"
+                            data-base-salary="{{ $payroll->base_salary }}"
+                            data-allowances="{{ $payroll->allowances }}"
+                            data-deductions="{{ $payroll->deductions }}"
+                            data-net-pay="{{ $payroll->net_pay }}"
+                            data-pay-period="{{ $payroll->pay_period }}"
                         >
                             <td class="px-5 py-4">
-                                <p class="font-semibold text-slate-900">{{ $row['employee_name'] }}</p>
-                                <p class="text-xs text-slate-500">{{ $row['job_title'] }}</p>
+                                @if ($emp)
+                                    <a href="{{ route('admin.employees.show', $emp) }}" class="group">
+                                        <p class="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">{{ $emp->name }}</p>
+                                        <p class="text-xs text-slate-500">{{ $emp->job_title ?? '' }}</p>
+                                    </a>
+                                @else
+                                    <p class="font-semibold text-slate-900">—</p>
+                                @endif
                             </td>
-                            <td class="px-5 py-4 text-slate-700">{{ $money($row['base_salary']) }}</td>
-                            <td class="px-5 py-4 font-medium text-emerald-600">+{{ $money($row['allowances']) }}</td>
-                            <td class="px-5 py-4 font-medium text-red-500">-{{ $money($row['deductions']) }}</td>
-                            <td class="px-5 py-4 font-bold text-slate-900">{{ $money($row['net_pay']) }}</td>
+                            <td class="px-5 py-4 text-slate-700">{{ $money($payroll->base_salary) }}</td>
+                            <td class="px-5 py-4 font-medium text-emerald-600">+{{ $money($payroll->allowances) }}</td>
+                            <td class="px-5 py-4 font-medium text-red-500">-{{ $money($payroll->deductions) }}</td>
+                            <td class="px-5 py-4 font-bold text-slate-900">{{ $money($payroll->net_pay) }}</td>
                             <td class="px-5 py-4 text-right">
                                 <button
                                     type="button"
                                     class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
                                     data-action="view-payslip"
-                                    data-payroll-id="{{ $row['id'] }}"
-                                    data-employee-id="{{ $row['employee_id'] }}"
-                                    data-payslip-url="{{ url('/api/payroll/'.$row['id'].'/payslip') }}"
+                                    data-payroll-id="{{ $payroll->id }}"
+                                    data-employee-id="{{ $emp?->id }}"
+                                    data-payslip-url="{{ url('/api/payroll/'.$payroll->id.'/payslip') }}"
                                 >
                                     View Payslip
                                 </button>
@@ -258,106 +178,36 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($payrolls->hasPages())
+            <div class="flex flex-col items-center gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-between">
+                <a
+                    href="{{ $payrolls->previousPageUrl() }}"
+                    class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium {{ $payrolls->onFirstPage() ? 'pointer-events-none text-slate-300' : 'text-slate-700 hover:bg-slate-100' }}"
+                >
+                    @include('Payroll.partials.icons', ['name' => 'chevron-left', 'class' => 'h-4 w-4'])
+                    Previous
+                </a>
+                <nav class="flex items-center gap-1" aria-label="Pagination">
+                    @for ($page = 1; $page <= $payrolls->lastPage(); $page++)
+                        <a
+                            href="{{ $payrolls->url($page) }}"
+                            class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors {{ $payrolls->currentPage() === $page ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}"
+                        >{{ $page }}</a>
+                    @endfor
+                </nav>
+                <a
+                    href="{{ $payrolls->nextPageUrl() }}"
+                    class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium {{ $payrolls->onLastPage() ? 'pointer-events-none text-slate-300' : 'text-slate-700 hover:bg-slate-100' }}"
+                >
+                    Next
+                    @include('Payroll.partials.icons', ['name' => 'chevron-right', 'class' => 'h-4 w-4'])
+                </a>
+            </div>
+        @endif
     </div>
 @endsection
 
 @push('modals')
     @include('Payroll.partials.payslip-modal')
-@endpush
-
-@push('scripts')
-    {{-- Fallback when Vite is not running; mirrors resources/js/payroll.js handlers --}}
-    @if (! file_exists(public_path('build/manifest.json')) && ! file_exists(public_path('hot')))
-        <script>
-            (function () {
-                const app = document.getElementById('payroll-app');
-                const csrf = app?.dataset.csrf || document.querySelector('meta[name="csrf-token"]')?.content || '';
-                const processUrl = app?.dataset.processUrl || '/api/payroll/process';
-                const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
-
-                async function processPayroll(payPeriod) {
-                    const res = await fetch(processUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json',
-                            'X-CSRF-TOKEN': csrf,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        body: JSON.stringify({ pay_period: payPeriod }),
-                    });
-                    if (!res.ok) throw new Error('API not ready');
-                    return res.json();
-                }
-
-                function openModal() {
-                    const modal = document.getElementById('payslip-modal');
-                    modal?.classList.remove('hidden');
-                    document.body.classList.add('overflow-hidden');
-                }
-
-                function closeModal() {
-                    const modal = document.getElementById('payslip-modal');
-                    modal?.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                }
-
-                function fillModal(row) {
-                    const modal = document.getElementById('payslip-modal');
-                    if (!modal || !row) return;
-                    modal.querySelector('[data-field="employee_name"]').textContent = row.dataset.employeeName || '—';
-                    modal.querySelector('[data-field="job_title"]').textContent = row.dataset.jobTitle || '—';
-                    modal.querySelector('[data-field="pay_period"]').textContent =
-                        row.dataset.payPeriod || document.getElementById('pay_period')?.selectedOptions?.[0]?.text || '—';
-                    modal.querySelector('[data-field="base_salary"]').textContent = money(row.dataset.baseSalary);
-                    modal.querySelector('[data-field="allowances"]').textContent = money(row.dataset.allowances);
-                    modal.querySelector('[data-field="deductions"]').textContent = money(row.dataset.deductions);
-                    modal.querySelector('[data-field="net_pay"]').textContent = money(row.dataset.netPay);
-                    modal.querySelector('[data-field="employee_id"]').textContent = row.dataset.employeeId || '—';
-                }
-
-                const btn = document.getElementById('btn-process-payroll');
-                const statusEl = document.getElementById('payroll-process-status');
-                const period = document.getElementById('pay_period');
-
-                btn?.addEventListener('click', async () => {
-                    if (!period?.value) {
-                        statusEl.textContent = 'Please select a pay period first.';
-                        return;
-                    }
-                    btn.disabled = true;
-                    statusEl.textContent = 'Processing payroll…';
-                    statusEl.className = 'text-sm text-slate-500';
-                    try {
-                        try {
-                            await processPayroll(period.value);
-                            statusEl.textContent = `Payroll processed successfully for ${period.selectedOptions[0].text}.`;
-                            statusEl.className = 'text-sm text-emerald-600';
-                        } catch (e) {
-                            document.querySelectorAll('[data-payroll-table-body] tr').forEach((tr) => {
-                                tr.dataset.payPeriod = period.value;
-                            });
-                            statusEl.textContent = `Ready for ${period.selectedOptions[0].text}. Backend API not connected yet — UI flow works.`;
-                            statusEl.className = 'text-sm text-emerald-600';
-                        }
-                    } finally {
-                        btn.disabled = false;
-                    }
-                });
-
-                document.addEventListener('click', (e) => {
-                    const viewBtn = e.target.closest('[data-action="view-payslip"]');
-                    if (viewBtn) {
-                        fillModal(viewBtn.closest('tr'));
-                        openModal();
-                        return;
-                    }
-                    if (e.target.closest('[data-action="close-payslip"]')) closeModal();
-                });
-
-                document.getElementById('btn-print-payslip')?.addEventListener('click', () => window.print());
-                document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-            })();
-        </script>
-    @endif
 @endpush

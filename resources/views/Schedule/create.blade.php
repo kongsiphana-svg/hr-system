@@ -8,7 +8,7 @@
         <div class="flex-grow overflow-y-auto p-6 lg:p-8">
             <div class="mb-8">
                 <nav class="mb-2 flex text-xs font-medium text-gray-500">
-                    <a href="{{ route('schedule.index') }}" class="hover:text-blue-600">Scheduling</a>
+                    <a href="{{ route('admin.schedule.index') }}" class="hover:text-blue-600">Scheduling</a>
                     <span class="mx-2">/</span>
                     <span class="text-gray-800">Add New Shift</span>
                 </nav>
@@ -30,16 +30,16 @@
 
             @if ($employees->isEmpty())
                 <div class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    No employees found. <a href="{{ route('employees.create') }}" class="font-semibold underline">Add an employee</a> before creating shifts.
+                    No employees found. <a href="{{ route('admin.employees.create') }}" class="font-semibold underline">Add an employee</a> before creating shifts.
                 </div>
             @endif
 
             <form
                 id="create-shift-form"
                 class="mx-auto max-w-6xl space-y-6 pb-20"
-                action="{{ route('schedules.store') }}"
+                action="{{ route('admin.schedules.store') }}"
                 method="post"
-                data-redirect="{{ route('schedule.index') }}"
+                data-redirect="{{ route('admin.schedule.index') }}"
             >
                 @csrf
 
@@ -165,7 +165,7 @@
         <footer class="flex justify-end border-t border-gray-200 bg-white px-8 py-4">
             <div class="flex items-center gap-3">
                 <a
-                    href="{{ route('schedule.index') }}"
+                    href="{{ route('admin.schedule.index') }}"
                     class="rounded-md border border-gray-200 px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-gray-50"
                 >
                     Cancel

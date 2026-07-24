@@ -10,39 +10,19 @@ use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    // --- REGISTRATION ---
-
-    public function showRegisterForm()
+    /**
+     * Redirect authenticated users to their appropriate dashboard.
+     */
+    protected function redirectHome(): string
     {
-        return view('auth.register');
+        if (Auth::check() && Auth::user()->isEmployee()) {
+            return route('employee.dashboard');
+        }
+
+        return route('admin.dashboard');
     }
 
-    public function register(Request $request)
-    {
-        $adminCode = env('ADMIN_CODE', 'HR-ADMIN-2026');
-
-        $request->validate([
-            'name' => 'required|string|max:255|unique:users',
-            'email' => 'required|string|email|max:255|unique:users',
-            'admin_code' => ['required', 'string', function ($attribute, $value, $fail) use ($adminCode) {
-                if (! hash_equals((string) $adminCode, (string) $value)) {
-                    $fail('The admin code is invalid.');
-                }
-            }],
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        Auth::login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Account created successfully!');
-    }
-
+    // Registration is disabled — only admin can add employees.
     // --- LOGIN ---
 
     public function showLoginForm()
@@ -53,20 +33,19 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'name' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
-            
-            // 3. Redirect to the dashboard instead of back to the login page!
-            return redirect()->intended(route('dashboard'));
+
+            return redirect()->intended($this->redirectHome());
         }
 
         return back()->withErrors([
-            'name' => 'The provided credentials do not match our records.',
-        ])->onlyInput('name');
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
     // --- LOGOUT ---
@@ -104,21 +83,25 @@ class AuthController extends Controller
             ->first();
 
         if ($user) {
+            // Existing user logging in via Google is assigned admin role.
             $user->update([
                 'google_id' => $googleUser->getId(),
                 'name' => $user->name ?: $googleUser->getName(),
+                'role' => User::ROLE_ADMIN,
             ]);
         } else {
+            // New Google sign-up creates an admin account (exception case).
             $user = User::create([
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
                 'password' => null,
+                'role' => User::ROLE_ADMIN,
             ]);
         }
 
         Auth::login($user, true);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended($this->redirectHome());
     }
 }

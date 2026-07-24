@@ -251,9 +251,9 @@
 
     <div class="auth-header">
         <div class="auth-badge" aria-hidden="true">
-            <i class="fa-solid fa-shield-halved"></i>
+            <i class="fa-solid fa-user-plus"></i>
         </div>
-        <h1 class="auth-title">Admin Create Account</h1>
+        <h1 class="auth-title">Create Employee Account</h1>
     </div>
 
     <div class="auth-card">
@@ -289,28 +289,6 @@
                     autocomplete="email"
                 >
                 @error('email')
-                    <div class="auth-error">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="auth-field">
-                <label class="auth-label" for="admin_code">Admin Code</label>
-                <div class="auth-input-wrap">
-                    <i class="fa-solid fa-lock auth-icon" aria-hidden="true"></i>
-                    <input
-                        id="admin_code"
-                        type="password"
-                        name="admin_code"
-                        placeholder="••••••••"
-                        required
-                        class="auth-input"
-                        autocomplete="off"
-                    >
-                    <button type="button" class="auth-toggle" data-toggle-password="admin_code" aria-label="Show admin code">
-                        <i class="fa-solid fa-eye" data-eye></i>
-                    </button>
-                </div>
-                @error('admin_code')
                     <div class="auth-error">{{ $message }}</div>
                 @enderror
             </div>

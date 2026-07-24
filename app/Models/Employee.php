@@ -27,6 +27,11 @@ class Employee extends Model
     public const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern'];
 
     /**
+     * Valid values for the `pay_type` column (used by payroll generation).
+     */
+    public const PAY_TYPES = ['salary', 'hourly'];
+
+    /**
      * Valid values for the `work_location` column.
      */
     public const WORK_LOCATIONS = ['Remote', 'On-site', 'Hybrid'];
@@ -70,10 +75,14 @@ class Employee extends Model
         'base_salary',
         'hourly_rate',
         'standard_hours',
+        'fixed_start_time',
+        'fixed_end_time',
+        'fixed_work_days',
         'allowances',
         'deduction_rate',
         'fixed_deductions',
         'is_active',
+        'plain_password',
     ];
 
     protected $casts = [
@@ -83,6 +92,9 @@ class Employee extends Model
         'base_salary' => 'decimal:2',
         'hourly_rate' => 'decimal:2',
         'standard_hours' => 'integer',
+        'fixed_start_time' => 'string',
+        'fixed_end_time' => 'string',
+        'fixed_work_days' => 'array',
         'allowances' => 'decimal:2',
         'deduction_rate' => 'decimal:4',
         'fixed_deductions' => 'decimal:2',

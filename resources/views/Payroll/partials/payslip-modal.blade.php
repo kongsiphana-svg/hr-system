@@ -1,4 +1,4 @@
-{{-- Print-friendly payslip modal. Backend can hydrate via GET /api/payroll/{id}/payslip --}}
+{{-- Print-friendly payslip modal --}}
 <div
     id="payslip-modal"
     class="fixed inset-0 z-50 hidden"
@@ -36,6 +36,7 @@
                 <div class="mb-6 rounded-xl bg-slate-50 px-4 py-3">
                     <p class="text-lg font-semibold text-slate-900" data-field="employee_name">—</p>
                     <p class="text-sm text-slate-500" data-field="job_title">—</p>
+                    <p class="text-xs text-slate-400" data-field="department">—</p>
                 </div>
 
                 <dl class="space-y-3 text-sm">
@@ -44,12 +45,28 @@
                         <dd class="font-medium text-slate-900" data-field="base_salary">—</dd>
                     </div>
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <dt class="text-slate-500">Hours Worked</dt>
+                        <dd class="font-medium text-slate-900" data-field="hours_worked">—</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <dt class="text-slate-500">Approved Leave</dt>
+                        <dd class="font-medium text-slate-900" data-field="approved_leave_days">—</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <dt class="text-slate-500">Overtime</dt>
+                        <dd class="font-medium text-slate-900" data-field="overtime_hours">—</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <dt class="text-slate-500">Allowances</dt>
                         <dd class="font-medium text-emerald-600" data-field="allowances">—</dd>
                     </div>
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <dt class="text-slate-500">Deductions</dt>
                         <dd class="font-medium text-red-500" data-field="deductions">—</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <dt class="text-slate-500">Gross Salary</dt>
+                        <dd class="font-medium text-slate-900" data-field="gross_pay">—</dd>
                     </div>
                     <div class="flex items-center justify-between pt-1">
                         <dt class="text-base font-semibold text-slate-900">Net Pay</dt>

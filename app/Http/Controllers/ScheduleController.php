@@ -26,6 +26,43 @@ class ScheduleController extends Controller
 
         $schedules = $query->paginate(10)->withQueryString();
 
+        // ── Get all week schedules for stats (unpaginated) ────────────
+        $allWeekSchedules = Schedule::with('employee')
+            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+            ->when($department, fn ($q) => $q->whereHas('employee', fn ($eq) => $eq->where('department', $department)))
+            ->get();
+
+        // Compute scheduled hours per employee for this week
+        $scheduledEmployeeHours = [];
+        foreach ($allWeekSchedules as $schedule) {
+            $start = Carbon::parse($schedule->date->format('Y-m-d').' '.substr((string) $schedule->start_time, 0, 5));
+            $end = Carbon::parse($schedule->date->format('Y-m-d').' '.substr((string) $schedule->end_time, 0, 5));
+            if ($end->lessThanOrEqualTo($start)) $end->addDay();
+            $hours = round($start->diffInMinutes($end) / 60, 1);
+
+            $eid = $schedule->employee_id;
+            $scheduledEmployeeHours[$eid] = ($scheduledEmployeeHours[$eid] ?? 0) + $hours;
+        }
+
+        // ── Employee fixed/standard hours (set when admin adds employee) ─
+        $employeesWithStd = Employee::query()
+            ->whereNotNull('standard_hours')
+            ->when($department, fn ($q) => $q->where('department', $department))
+            ->get(['id', 'first_name', 'last_name', 'standard_hours', 'pay_type', 'department', 'job_title', 'email'])
+            ->keyBy('id');
+
+        $weeklyStdHours = [];
+        foreach ($employeesWithStd as $eid => $emp) {
+            // Convert monthly standard hours to weekly (~4.33 weeks/month)
+            $weeklyStdHours[$eid] = round((float) $emp->standard_hours / 4.33, 1);
+        }
+
+        // Summary stats
+        $totalScheduledHours = array_sum($scheduledEmployeeHours);
+        $totalStdWeekly = array_sum($weeklyStdHours);
+        $totalShifts = $allWeekSchedules->count();
+        $uniqueEmployees = $allWeekSchedules->pluck('employee_id')->unique()->count();
+
         $todayCount = Schedule::whereDate('date', now()->toDateString())->count();
 
         $departments = Employee::query()
@@ -35,6 +72,14 @@ class ScheduleController extends Controller
             ->orderBy('department')
             ->pluck('department');
 
+        // ── Employee fixed daily work hours (start_time / end_time) ──
+        $employeesWithFixedHours = Employee::query()
+            ->whereNotNull('fixed_start_time')
+            ->whereNotNull('fixed_end_time')
+            ->when($department, fn ($q) => $q->where('department', $department))
+            ->get(['id', 'first_name', 'last_name', 'fixed_start_time', 'fixed_end_time'])
+            ->keyBy('id');
+
         $employees = Employee::orderBy('first_name')->orderBy('last_name')->get();
 
         return view('Schedule.index', [
@@ -42,6 +87,14 @@ class ScheduleController extends Controller
             'weekStart' => $weekStart,
             'weekEnd' => $weekEnd,
             'todayCount' => $todayCount,
+            'totalScheduledHours' => round($totalScheduledHours, 1),
+            'totalStdWeekly' => round($totalStdWeekly, 1),
+            'totalShifts' => $totalShifts,
+            'uniqueEmployees' => $uniqueEmployees,
+            'scheduledEmployeeHours' => $scheduledEmployeeHours,
+            'weeklyStdHours' => $weeklyStdHours,
+            'employeesWithStd' => $employeesWithStd,
+            'employeesWithFixedHours' => $employeesWithFixedHours,
             'departments' => $departments,
             'employees' => $employees,
             'selectedDepartment' => $department,
@@ -86,6 +139,9 @@ class ScheduleController extends Controller
                 'avatar' => $employee->avatar_url,
                 'initials' => $employee->initials(),
                 'shifts' => $shifts,
+                'fixed_start_time' => $employee->fixed_start_time,
+                'fixed_end_time' => $employee->fixed_end_time,
+                'fixed_work_days' => $employee->fixed_work_days,
             ];
         })->values();
 
@@ -148,7 +204,7 @@ class ScheduleController extends Controller
         }
 
         return redirect()
-            ->route('schedule.index', ['week' => $schedule->date->toDateString()])
+            ->route('admin.schedule.index', ['week' => $schedule->date->toDateString()])
             ->with('success', 'Shift created successfully.');
     }
 

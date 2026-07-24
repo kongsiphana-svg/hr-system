@@ -22,7 +22,7 @@
             </div>
             <div class="flex items-center gap-3">
 
-                <a href="{{ route('employees.create') }}" class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-label-md text-label-md hover:shadow-lg hover:shadow-primary/20 transition-all">
+                <a href="{{ route('admin.employees.create') }}" class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-label-md text-label-md hover:shadow-lg hover:shadow-primary/20 transition-all">
                     <span class="material-symbols-outlined text-[18px]">person_add</span>
                     Add Employee
                 </a>
@@ -30,11 +30,11 @@
         </div>
 
         {{-- Bento Filter & Summary Bar --}}
-        <form action="{{ route('employees.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <form action="{{ route('admin.employees.index') }}" method="GET" class="mb-6">
             @if (request('search'))
                 <input type="hidden" name="search" value="{{ request('search') }}">
             @endif
-            <div class="md:col-span-3 bg-white border border-outline-variant rounded-xl p-4">
+            <div class="bg-white border border-outline-variant rounded-xl p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="font-body-sm font-bold text-on-surface mb-1 block" for="department">Filter by Department</label>
@@ -58,19 +58,11 @@
                 </div>
                 <div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant">
                     <button type="submit" class="px-4 py-2 text-white bg-primary font-label-md rounded-lg hover:opacity-90 transition-opacity">Apply</button>
-                    <a href="{{ route('employees.index') }}" class="px-4 py-2 text-primary font-label-md hover:bg-primary/5 rounded-lg transition-colors">Reset All</a>
+                    <a href="{{ route('admin.employees.index') }}" class="px-4 py-2 text-primary font-label-md hover:bg-primary/5 rounded-lg transition-colors">Reset All</a>
                 </div>
             </div>
 
-            {{-- Stats Card --}}
-            <div class="bg-primary text-white border border-primary-container rounded-xl p-4 flex flex-col justify-center relative overflow-hidden">
-                <div class="relative z-10">
-                    <p class="text-white/70 font-label-sm text-label-sm uppercase tracking-widest">Total Workforce</p>
-                    <h3 class="text-display-lg font-display-lg leading-none mt-1">{{ number_format($totalWorkforce) }}</h3>
-                    <p class="text-primary-fixed font-body-sm mt-1">+{{ $newHiresThisMonth ?? 0 }} this month</p>
-                </div>
-                <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-white/10 rotate-12">groups</span>
-            </div>
+
         </form>
 
         {{-- Data Table Section --}}
@@ -139,10 +131,10 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <a href="{{ route('employees.show', $employee) }}" class="p-2 text-primary hover:bg-primary/10 rounded-lg" title="View Profile">
+                                        <a href="{{ route('admin.employees.show', $employee) }}" class="p-2 text-primary hover:bg-primary/10 rounded-lg" title="View Profile">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </a>
-                                        <form action="{{ route('employees.destroy', $employee) }}" method="POST" onsubmit="return confirm('Remove {{ $employee->name }} from the directory?');">
+                                        <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" onsubmit="return confirm('Remove {{ $employee->name }} from the directory?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="p-2 text-error hover:bg-error/10 rounded-lg" title="Delete">

@@ -10,7 +10,7 @@
 
         {{-- Breadcrumbs --}}
         <nav class="flex items-center gap-2 text-label-md text-secondary mb-6">
-            <a class="hover:text-primary transition-colors" href="{{ route('employees.index') }}">Employees</a>
+            <a class="hover:text-primary transition-colors" href="{{ route('admin.employees.index') }}">Employees</a>
             <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             <span class="text-on-surface font-bold">{{ $employee->name }}</span>
         </nav>
@@ -60,13 +60,17 @@
                     </div>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <a href="{{ route('employees.edit', $employee) }}" class="px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all">
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('admin.employees.create-account', $employee) }}" class="px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all">
+                    <span class="material-symbols-outlined text-[18px]">person_add</span>
+                    Create Account
+                </a>
+                <a href="{{ route('admin.employees.edit', $employee) }}" class="px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all">
                     <span class="material-symbols-outlined text-[18px]">edit</span>
                     Edit Details
                 </a>
                 @if ($employee->status !== 'terminated')
-                    <form action="{{ route('employees.deactivate', $employee) }}" method="POST" onsubmit="return confirm('Deactivate {{ $employee->name }}\'s account?');">
+                    <form action="{{ route('admin.employees.deactivate', $employee) }}" method="POST" onsubmit="return confirm('Deactivate {{ $employee->name }}\'s account?');">
                         @csrf
                         @method('PATCH')
                         <button type="submit" class="px-4 py-2 bg-white border border-error/30 text-error rounded-lg font-label-md flex items-center gap-2 hover:bg-error-container/20 transition-all">
@@ -123,7 +127,38 @@
                     <span class="material-symbols-outlined text-primary">contact_mail</span>
                     <h3 class="font-title-lg text-title-lg text-on-surface">Contact Info</h3>
                 </div>
+
                 <dl class="space-y-4">
+                    {{-- Password Row — always visible --}}
+                    <div class="flex items-center justify-between gap-3 p-3 rounded-lg {{ $decryptedPassword ? 'bg-amber-50/80 border-amber-200' : 'bg-surface-container-low border-outline-variant' }} border -mx-1">
+                        <div class="flex-1 min-w-0">
+                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-0.5">Password</dt>
+                            <dd class="font-body-md flex items-center gap-2">
+                                @if ($decryptedPassword)
+                                    <span class="font-mono text-amber-800" id="passwordDisplay">••••••••</span>
+                                @else
+                                    <span class="text-secondary">Not set</span>
+                                @endif
+                            </dd>
+                        </div>
+                        @if ($decryptedPassword)
+                            <button
+                                type="button"
+                                id="togglePasswordBtn"
+                                class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-white text-amber-700 font-label-sm hover:bg-amber-50 transition-all active:scale-95"
+                                data-password="{{ $decryptedPassword }}"
+                            >
+                                <span class="material-symbols-outlined text-[18px]" id="togglePasswordIcon">visibility</span>
+                                <span id="togglePasswordLabel">View</span>
+                            </button>
+                        @else
+                            <a href="{{ route('admin.employees.edit', $employee) }}" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant bg-white text-secondary font-label-sm hover:bg-surface-container-low transition-all">
+                                <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+                                Set Password
+                            </a>
+                        @endif
+                    </div>
+
                     <div>
                         <dt class="font-label-sm text-secondary uppercase tracking-wider">Work Email</dt>
                         <dd class="font-body-md">
@@ -186,12 +221,37 @@
                         <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Probation Period</dt>
                         <dd class="font-body-md text-on-surface">{{ $employee->probation_period ?? '—' }}</dd>
                     </div>
-                    @if ($employee->salary)
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Pay Type</dt>
+                        <dd class="font-body-md text-on-surface">{{ ucfirst($employee->pay_type ?? 'salary') }}</dd>
+                    </div>
+                    @if (($employee->pay_type ?? 'salary') === 'hourly')
                         <div>
-                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Annual Salary</dt>
-                            <dd class="font-body-md text-on-surface">${{ number_format($employee->salary, 2) }}</dd>
+                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Hourly Rate</dt>
+                            <dd class="font-body-md text-on-surface">${{ number_format((float) $employee->hourly_rate, 2) }}</dd>
+                        </div>
+                    @else
+                        <div>
+                            <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Monthly Base Salary</dt>
+                            <dd class="font-body-md text-on-surface">${{ number_format((float) ($employee->base_salary ?: $employee->salary), 2) }}</dd>
                         </div>
                     @endif
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Standard Hours</dt>
+                        <dd class="font-body-md text-on-surface">{{ $employee->standard_hours ?? 160 }}h / month</dd>
+                    </div>
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Allowances</dt>
+                        <dd class="font-body-md text-on-surface">${{ number_format((float) $employee->allowances, 2) }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Deduction Rate</dt>
+                        <dd class="font-body-md text-on-surface">{{ number_format(((float) $employee->deduction_rate) * 100, 2) }}%</dd>
+                    </div>
+                    <div>
+                        <dt class="font-label-sm text-secondary uppercase tracking-wider mb-1">Fixed Deductions</dt>
+                        <dd class="font-body-md text-on-surface">${{ number_format((float) $employee->fixed_deductions, 2) }}</dd>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,3 +259,37 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const btn = document.getElementById('togglePasswordBtn');
+    const display = document.getElementById('passwordDisplay');
+    const icon = document.getElementById('togglePasswordIcon');
+    const label = document.getElementById('togglePasswordLabel');
+
+    if (!btn || !display) return;
+
+    const realPassword = btn.dataset.password;
+    let visible = false;
+
+    btn.addEventListener('click', function () {
+        visible = !visible;
+
+        if (visible) {
+            display.textContent = realPassword;
+            icon.textContent = 'visibility_off';
+            label.textContent = 'Hide';
+            btn.classList.remove('border-amber-300', 'bg-white', 'text-amber-700');
+            btn.classList.add('border-amber-500', 'bg-amber-100', 'text-amber-800');
+        } else {
+            display.textContent = '••••••••';
+            icon.textContent = 'visibility';
+            label.textContent = 'View';
+            btn.classList.remove('border-amber-500', 'bg-amber-100', 'text-amber-800');
+            btn.classList.add('border-amber-300', 'bg-white', 'text-amber-700');
+        }
+    });
+})();
+</script>
+@endpush

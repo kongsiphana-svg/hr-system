@@ -18,7 +18,7 @@
             <p class="font-body-sm text-body-sm text-secondary">{{ auth()->check() ? 'Update your name, email, and password.' : 'Sign in to manage your account profile.' }}</p>
         </a>
 
-        <a href="{{ route('employees.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
+        <a href="{{ route('admin.employees.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
             <div class="flex items-center gap-3 mb-2">
                 <span class="material-symbols-outlined text-primary">groups</span>
                 <h3 class="font-title-lg text-title-lg text-on-surface">Employee Directory</h3>
@@ -26,7 +26,7 @@
             <p class="font-body-sm text-body-sm text-secondary">Manage workforce records and statuses.</p>
         </a>
 
-        <a href="{{ route('payroll.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
+        <a href="{{ route('admin.payroll.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
             <div class="flex items-center gap-3 mb-2">
                 <span class="material-symbols-outlined text-primary">payments</span>
                 <h3 class="font-title-lg text-title-lg text-on-surface">Payroll</h3>
@@ -34,7 +34,7 @@
             <p class="font-body-sm text-body-sm text-secondary">Review and process compensation cycles.</p>
         </a>
 
-        <a href="{{ route('leave-requests.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
+        <a href="{{ route('admin.leave-requests.index') }}" class="bg-white border border-outline-variant rounded-xl p-6 hover:border-primary/40 transition-colors no-underline block">
             <div class="flex items-center gap-3 mb-2">
                 <span class="material-symbols-outlined text-primary">event_busy</span>
                 <h3 class="font-title-lg text-title-lg text-on-surface">Leave Requests</h3>

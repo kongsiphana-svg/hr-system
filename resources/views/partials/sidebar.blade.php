@@ -1,5 +1,5 @@
 <aside class="w-[260px] h-screen fixed left-0 top-0 bg-tertiary flex flex-col py-6 border-r border-outline-variant z-50">
-    <a href="{{ route('dashboard') }}" class="px-6 mb-8 flex items-center gap-3 no-underline">
+    <a href="{{ route('admin.dashboard') }}" class="px-6 mb-8 flex items-center gap-3 no-underline">
         <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span class="material-symbols-outlined text-white text-lg">corporate_fare</span>
         </div>
@@ -12,18 +12,19 @@
     <nav class="flex-1 space-y-1 overflow-y-auto">
         @php
             $navItems = [
-                ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => 'dashboard', 'match' => 'dashboard'],
-                ['label' => 'Employees', 'icon' => 'groups', 'route' => 'employees.index', 'match' => 'employees.*'],
-                ['label' => 'Schedule', 'icon' => 'calendar_month', 'route' => 'schedule.index', 'match' => 'schedule.*'],
-                ['label' => 'Payroll', 'icon' => 'payments', 'route' => 'payroll.index', 'match' => 'payroll.*'],
-                ['label' => 'Leave Requests', 'icon' => 'event_busy', 'route' => 'leave-requests.index', 'match' => 'leave-requests.*'],
-                ['label' => 'Settings', 'icon' => 'settings', 'route' => 'settings.index', 'match' => 'settings.*'],
+                ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard'],
+                ['label' => 'Employees', 'icon' => 'groups', 'route' => 'admin.employees.index', 'match' => 'admin.employees.*'],
+                ['label' => 'Schedule', 'icon' => 'calendar_month', 'route' => 'admin.schedule.index', 'match' => 'admin.schedule.*'],
+                ['label' => 'Payroll', 'icon' => 'payments', 'route' => 'admin.payroll.index', 'match' => 'admin.payroll.*'],
+                ['label' => 'Leave Requests', 'icon' => 'event_busy', 'route' => 'admin.leave-requests.index', 'match' => ['admin.leave-requests.*', 'admin.leaves.*']],
+                ['label' => 'Settings', 'icon' => 'settings', 'route' => 'admin.settings.index', 'match' => 'admin.settings.*'],
             ];
         @endphp
 
         @foreach ($navItems as $item)
             @php
-                $isActive = Route::has($item['route']) && request()->routeIs($item['match']);
+                $match = (array) $item['match'];
+                $isActive = Route::has($item['route']) && request()->routeIs(...$match);
             @endphp
             <a
                 href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"

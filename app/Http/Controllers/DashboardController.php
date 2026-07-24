@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,22 +19,6 @@ class DashboardController extends Controller
         $recentLeaves = LeaveRequest::with('user')->latest()->take(4)->get();
 
         return view('dashboard.index', compact('metrics', 'recentLeaves'));
-    }
-
-    public function employees()
-    {
-        $employees = User::latest()->paginate(10);
-        return view('dashboard.employees', compact('employees'));
-    }
-
-    public function schedule()
-    {
-        return view('dashboard.schedule');
-    }
-
-    public function payroll()
-    {
-        return view('dashboard.payroll');
     }
 
     public function settings()
@@ -58,7 +41,12 @@ class DashboardController extends Controller
             'name'  => 'required|string|max:255|unique:users,name,' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
         ]);
+
+        if ($request->hasFile('avatar')) {
+            $user->avatar = $this->storeAvatar($request->file('avatar'));
+        }
 
         $user->name = $request->name;
         $user->email = $request->email;
@@ -70,5 +58,22 @@ class DashboardController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Your profile details have been successfully saved!');
+    }
+
+    /**
+     * Store an uploaded avatar and return its public URL.
+     */
+    protected function storeAvatar(\Illuminate\Http\UploadedFile $file): string
+    {
+        $directory = public_path('uploads/avatars');
+
+        if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw new \RuntimeException("Unable to create avatar directory.");
+        }
+
+        $filename = uniqid('avatar_', true).'.'.$file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return asset('uploads/avatars/'.$filename);
     }
 }

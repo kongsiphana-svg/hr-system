@@ -11,7 +11,7 @@
         {{-- Breadcrumbs & Title --}}
         <div class="mb-8">
             <nav class="flex text-secondary font-label-md mb-2">
-                <a class="hover:text-primary transition-colors" href="{{ route('employees.index') }}">Employees</a>
+                <a class="hover:text-primary transition-colors" href="{{ route('admin.employees.index') }}">Employees</a>
                 <span class="mx-2">/</span>
                 <span class="text-on-surface">Add New Employee</span>
             </nav>
@@ -45,7 +45,7 @@
         </div>
 
         {{-- Form: Step 2 of 3 --}}
-        <form action="{{ route('employees.create.contact.store') }}" method="POST" class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden" id="contactForm">
+        <form action="{{ route('admin.employees.create.contact.store') }}" method="POST" class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden" id="contactForm">
             @csrf
 
             <div class="p-8 space-y-8">
@@ -65,13 +65,14 @@
                                 name="email"
                                 placeholder="j.doe@company.com"
                                 type="email"
-                                value="{{ old('email') }}"
+                                value="{{ old('email', $step1['email'] ?? '') }}"
                                 required
                                 autofocus
                             >
                             @error('email')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="font-body-sm text-secondary mt-1">Must match the login email used for leave requests so payroll can pull approved leave.</p>
                         </div>
 
                         {{-- Personal Email --}}
@@ -83,7 +84,7 @@
                                 name="personal_email"
                                 placeholder="john.doe@email.com"
                                 type="email"
-                                value="{{ old('personal_email') }}"
+                                value="{{ old('personal_email', $step1['personal_email'] ?? '') }}"
                             >
                             @error('personal_email')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -99,7 +100,7 @@
                                 name="phone"
                                 placeholder="012 3456789"
                                 type="tel"
-                                value="{{ old('phone') }}"
+                                value="{{ old('phone', $step1['phone'] ?? '') }}"
                             >
                             @error('phone')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -115,7 +116,7 @@
                                 name="address_line_1"
                                 placeholder="Street address"
                                 type="text"
-                                value="{{ old('address_line_1') }}"
+                                value="{{ old('address_line_1', $step1['address_line_1'] ?? '') }}"
                             >
                             @error('address_line_1')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -131,7 +132,7 @@
                                 name="address_line_2"
                                 placeholder="Apartment, suite, etc. (optional)"
                                 type="text"
-                                value="{{ old('address_line_2') }}"
+                                value="{{ old('address_line_2', $step1['address_line_2'] ?? '') }}"
                             >
                             @error('address_line_2')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -146,7 +147,7 @@
                                 id="city"
                                 name="city"
                                 type="text"
-                                value="{{ old('city') }}"
+                                value="{{ old('city', $step1['city'] ?? '') }}"
                             >
                             @error('city')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -161,7 +162,7 @@
                                 id="country"
                                 name="country"
                                 type="text"
-                                value="{{ old('country') }}"
+                                value="{{ old('country', $step1['country'] ?? '') }}"
                             >
                             @error('country')
                                 <p class="font-body-sm text-error mt-1">{{ $message }}</p>
@@ -173,7 +174,7 @@
 
             {{-- Footer Actions --}}
             <div class="bg-surface-container-low px-8 py-6 flex justify-between items-center border-t border-outline-variant">
-                <a href="{{ route('employees.create') }}" class="px-6 py-2.5 rounded-lg border border-outline-variant text-secondary font-label-md hover:bg-surface-container-high transition-colors flex items-center gap-2">
+                <a href="{{ route('admin.employees.create') }}" class="px-6 py-2.5 rounded-lg border border-outline-variant text-secondary font-label-md hover:bg-surface-container-high transition-colors flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                     Back
                 </a>

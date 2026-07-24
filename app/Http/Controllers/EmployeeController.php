@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
@@ -67,7 +71,7 @@ class EmployeeController extends Controller
             'gender' => ['required', 'in:' . implode(',', Employee::GENDERS)],
             'nationality' => ['required', 'string', 'max:255'],
             'identification_id' => ['required', 'string', 'max:255'],
-            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
+            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -76,9 +80,15 @@ class EmployeeController extends Controller
 
         unset($data['avatar']);
 
-        session([self::WIZARD_SESSION_KEY => $data]);
+        // Merge so going back to step 1 doesn't wipe contact/job session data.
+        session([
+            self::WIZARD_SESSION_KEY => array_merge(
+                session(self::WIZARD_SESSION_KEY, []),
+                $data
+            ),
+        ]);
 
-        return redirect()->route('employees.create.contact');
+        return redirect()->route('admin.employees.create.contact');
     }
 
     /**
@@ -90,7 +100,7 @@ class EmployeeController extends Controller
     {
         if (! session()->has(self::WIZARD_SESSION_KEY . '.first_name')) {
             return redirect()
-                ->route('employees.create')
+                ->route('admin.employees.create')
                 ->with('status', 'Please start with the Personal Information step first.');
         }
 
@@ -123,7 +133,7 @@ class EmployeeController extends Controller
 
         session([self::WIZARD_SESSION_KEY => array_merge(session(self::WIZARD_SESSION_KEY, []), $data)]);
 
-        return redirect()->route('employees.create.job');
+        return redirect()->route('admin.employees.create.job');
     }
 
     /**
@@ -135,7 +145,7 @@ class EmployeeController extends Controller
     {
         if (! session()->has(self::WIZARD_SESSION_KEY . '.email')) {
             return redirect()
-                ->route('employees.create.contact')
+                ->route('admin.employees.create.contact')
                 ->with('status', 'Please complete the Contact Details step first.');
         }
 
@@ -144,6 +154,7 @@ class EmployeeController extends Controller
             'departments' => $this->departments(),
             'statuses' => Employee::STATUSES,
             'employmentTypes' => Employee::EMPLOYMENT_TYPES,
+            'payTypes' => Employee::PAY_TYPES,
             'workLocations' => Employee::WORK_LOCATIONS,
             'probationPeriods' => Employee::PROBATION_PERIODS,
             'reportingManagers' => Employee::query()
@@ -163,35 +174,54 @@ class EmployeeController extends Controller
     {
         if (! session()->has(self::WIZARD_SESSION_KEY . '.email')) {
             return redirect()
-                ->route('employees.create.contact')
+                ->route('admin.employees.create.contact')
                 ->with('status', 'Please complete the Contact Details step first.');
         }
 
         $wizardData = session(self::WIZARD_SESSION_KEY);
 
-        $jobData = $request->validate([
+        $jobData = $request->validate(array_merge([
             'department' => ['required', 'string', 'max:255'],
             'job_title' => ['required', 'string', 'max:255'],
             'employment_type' => ['required', 'in:' . implode(',', Employee::EMPLOYMENT_TYPES)],
             'start_date' => ['required', 'date'],
-            'salary' => ['nullable', 'numeric', 'min:0'],
             'reporting_manager' => ['nullable', 'string', 'max:255'],
             'work_location' => ['required', 'in:' . implode(',', Employee::WORK_LOCATIONS)],
             'probation_period' => ['required', 'in:' . implode(',', Employee::PROBATION_PERIODS)],
             'status' => ['required', 'in:' . implode(',', Employee::STATUSES)],
-        ]);
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], $this->payrollValidationRules()));
 
-        if (isset($jobData['salary'])) {
-            $jobData['base_salary'] = $jobData['salary'];
-        }
+        $jobData = $this->normalizePayrollFields($jobData);
         $jobData['is_active'] = ($jobData['status'] ?? '') === 'active';
 
-        $employee = Employee::create(array_merge($wizardData, $jobData));
+        // Drop non-column wizard leftovers before create.
+        $payload = collect(array_merge($wizardData, $jobData))
+            ->only((new Employee)->getFillable())
+            ->all();
+
+        $employee = Employee::create($payload);
+
+        // ── Auto-create a User account with the admin-set password ───
+        User::updateOrCreate(
+            ['email' => $employee->email],
+            [
+                'name' => strtolower(str_replace(' ', '.', $employee->name)),
+                'email' => $employee->email,
+                'password' => Hash::make($jobData['password']),
+                'role' => User::ROLE_EMPLOYEE,
+            ]
+        );
+
+        // Save encrypted plain-text password for admin to view later
+        $employee->update([
+            'plain_password' => encrypt($jobData['password']),
+        ]);
 
         session()->forget(self::WIZARD_SESSION_KEY);
 
         return redirect()
-            ->route('employees.show', $employee)
+            ->route('admin.employees.show', $employee)
             ->with('status', "{$employee->name} was added to the directory.");
     }
 
@@ -202,6 +232,7 @@ class EmployeeController extends Controller
     {
         return view('employees.show', [
             'employee' => $employee,
+            'decryptedPassword' => $employee->plain_password ? decrypt($employee->plain_password) : null,
         ]);
     }
 
@@ -216,6 +247,7 @@ class EmployeeController extends Controller
             'statuses' => Employee::STATUSES,
             'genders' => Employee::GENDERS,
             'employmentTypes' => Employee::EMPLOYMENT_TYPES,
+            'payTypes' => Employee::PAY_TYPES,
             'workLocations' => Employee::WORK_LOCATIONS,
             'probationPeriods' => Employee::PROBATION_PERIODS,
             'reportingManagers' => Employee::query()
@@ -239,17 +271,28 @@ class EmployeeController extends Controller
 
         unset($data['avatar']);
 
-        if (array_key_exists('salary', $data)) {
-            $data['base_salary'] = $data['salary'];
-        }
+        $data = $this->normalizePayrollFields($data);
+
         if (array_key_exists('status', $data)) {
             $data['is_active'] = $data['status'] === 'active';
         }
 
         $employee->update($data);
 
+        // If a new password was provided, update the user account
+        if ($request->filled('password')) {
+            User::where('email', $employee->email)->update([
+                'password' => Hash::make($request->password),
+            ]);
+
+            // Also update the stored plain password
+            $employee->update([
+                'plain_password' => encrypt($request->password),
+            ]);
+        }
+
         return redirect()
-            ->route('employees.show', $employee)
+            ->route('admin.employees.show', $employee)
             ->with('status', "{$employee->name}'s record was updated.");
     }
 
@@ -266,8 +309,60 @@ class EmployeeController extends Controller
         ]);
 
         return redirect()
-            ->route('employees.show', $employee)
+            ->route('admin.employees.show', $employee)
             ->with('status', "{$employee->name}'s account was deactivated.");
+    }
+
+    /**
+     * GET /employees/{employee}/create-account
+     *
+     * Show a form to create a User account for an Employee.
+     */
+    public function createAccountForm(Employee $employee): \Illuminate\View\View
+    {
+        // Check if this employee already has a user account via email match
+        $existingUser = User::where('email', $employee->email)->first();
+
+        return view('employees.create-account', [
+            'employee' => $employee,
+            'existingUser' => $existingUser,
+        ]);
+    }
+
+    /**
+     * POST /employees/{employee}/create-account
+     *
+     * Create a new User account for the Employee with role=employee.
+     */
+    public function createAccount(Request $request, Employee $employee): RedirectResponse
+    {
+        // Guard: ensure no duplicate user for this email
+        if (User::where('email', $employee->email)->exists()) {
+            return redirect()
+                ->route('admin.employees.create-account', $employee)
+                ->with('error', 'A user account already exists for this email address.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:users,name'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $employee->email,
+            'password' => Hash::make($validated['password']),
+            'role' => User::ROLE_EMPLOYEE,
+        ]);
+
+        // Save encrypted plain-text password for admin to view later
+        $employee->update([
+            'plain_password' => encrypt($validated['password']),
+        ]);
+
+        return redirect()
+            ->route('admin.employees.show', $employee)
+            ->with('success', "Employee account created for {$user->name}. They can now log in with their email and the password you set.");
     }
 
     /**
@@ -279,7 +374,7 @@ class EmployeeController extends Controller
         $employee->delete();
 
         return redirect()
-            ->route('employees.index')
+            ->route('admin.employees.index')
             ->with('status', "{$name} was removed from the directory.");
     }
 
@@ -346,23 +441,38 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Save an uploaded avatar directly into public/uploads/avatars and
-     * return its public URL. Deliberately avoids the storage:link symlink
-     * approach, since some Nginx configs refuse to follow it (500 error).
+     * Save an uploaded avatar into public/uploads/avatars and return its public URL.
+     * Avoids storage:link so Nginx configs that block symlink follow still work.
      */
     protected function storeAvatar(\Illuminate\Http\UploadedFile $file): string
     {
-        $directory = public_path('uploads/avatars');
+        $directory = $this->ensureAvatarDirectory();
 
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $filename = uniqid('avatar_') . '.' . $file->getClientOriginalExtension();
+        $filename = uniqid('avatar_', true).'.'.$file->getClientOriginalExtension();
 
         $file->move($directory, $filename);
 
-        return asset('uploads/avatars/' . $filename);
+        return asset('uploads/avatars/'.$filename);
+    }
+
+    /**
+     * Ensure public/uploads/avatars exists, recovering from a broken uploads symlink.
+     */
+    protected function ensureAvatarDirectory(): string
+    {
+        $uploads = public_path('uploads');
+        $directory = $uploads.DIRECTORY_SEPARATOR.'avatars';
+
+        // Broken symlink leftover from another machine (mkdir would fail otherwise).
+        if (is_link($uploads) && ! file_exists($uploads)) {
+            unlink($uploads);
+        }
+
+        if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw new \RuntimeException("Unable to create avatar directory at [{$directory}].");
+        }
+
+        return $directory;
     }
 
     /**
@@ -393,7 +503,7 @@ class EmployeeController extends Controller
      */
     protected function validated(Request $request, Employee $employee): array
     {
-        return $request->validate([
+        return $request->validate(array_merge([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'date_of_birth' => ['required', 'date', 'before:today'],
@@ -421,12 +531,71 @@ class EmployeeController extends Controller
             'job_title' => ['required', 'string', 'max:255'],
             'employment_type' => ['required', 'in:' . implode(',', Employee::EMPLOYMENT_TYPES)],
             'start_date' => ['required', 'date'],
-            'salary' => ['nullable', 'numeric', 'min:0'],
             'reporting_manager' => ['nullable', 'string', 'max:255'],
             'work_location' => ['required', 'in:' . implode(',', Employee::WORK_LOCATIONS)],
             'probation_period' => ['required', 'in:' . implode(',', Employee::PROBATION_PERIODS)],
             'status' => ['required', 'in:' . implode(',', Employee::STATUSES)],
-            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
-        ]);
+            'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ], $this->payrollValidationRules()));
+    }
+
+    /**
+     * Compensation fields required by payroll generation.
+     *
+     * @return array<string, list<mixed>>
+     */
+    protected function payrollValidationRules(): array
+    {
+        return [
+            'pay_type' => ['required', 'in:' . implode(',', Employee::PAY_TYPES)],
+            'salary' => ['nullable', 'numeric', 'min:0', 'required_if:pay_type,salary'],
+            'hourly_rate' => ['nullable', 'numeric', 'min:0', 'required_if:pay_type,hourly'],
+            'standard_hours' => ['required', 'integer', 'min:1', 'max:744'],
+            'fixed_start_time' => ['nullable', 'string', 'regex:/^\d{2}:\d{2}$/', 'max:5'],
+            'fixed_end_time' => ['nullable', 'string', 'regex:/^\d{2}:\d{2}$/', 'max:5'],
+            'fixed_work_days' => ['nullable', 'array'],
+            'fixed_work_days.*' => ['string', 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun'],
+            'allowances' => ['nullable', 'numeric', 'min:0'],
+            'deduction_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'fixed_deductions' => ['nullable', 'numeric', 'min:0'],
+        ];
+    }
+
+    /**
+     * Map form compensation inputs onto payroll DB columns.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function normalizePayrollFields(array $data): array
+    {
+        $payType = $data['pay_type'] ?? 'salary';
+        $standardHours = (int) ($data['standard_hours'] ?? 160);
+
+        $data['standard_hours'] = max(1, $standardHours);
+        $data['allowances'] = round((float) ($data['allowances'] ?? 0), 2);
+        $data['fixed_deductions'] = round((float) ($data['fixed_deductions'] ?? 0), 2);
+
+        if (array_key_exists('deduction_percent', $data)) {
+            $data['deduction_rate'] = round(((float) ($data['deduction_percent'] ?? 0)) / 100, 4);
+            unset($data['deduction_percent']);
+        } elseif (! array_key_exists('deduction_rate', $data)) {
+            $data['deduction_rate'] = 0.1000;
+        }
+
+        if ($payType === 'hourly') {
+            $hourlyRate = round((float) ($data['hourly_rate'] ?? 0), 2);
+            $data['hourly_rate'] = $hourlyRate;
+            $data['base_salary'] = round($hourlyRate * $data['standard_hours'], 2);
+            $data['salary'] = $data['base_salary'];
+        } else {
+            $salary = round((float) ($data['salary'] ?? $data['base_salary'] ?? 0), 2);
+            $data['salary'] = $salary;
+            $data['base_salary'] = $salary;
+            $data['hourly_rate'] = null;
+        }
+
+        return $data;
     }
 }

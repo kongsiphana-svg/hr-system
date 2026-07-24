@@ -30,6 +30,7 @@ class LeaveRequestController extends Controller
 
             return [
                 'id' => $leave->id,
+                'employee_id' => $leave->user?->employee?->id,
                 'employee' => $name,
                 'initials' => $initials,
                 'role' => $leave->user?->email ?? '',

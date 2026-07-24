@@ -249,7 +249,7 @@
         <div class="auth-badge" aria-hidden="true">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h1 class="auth-title">Admin Login</h1>
+        <h1 class="auth-title">Welcome To HR Managment System</h1>
     </div>
 
     <div class="auth-card">
@@ -257,18 +257,19 @@
             @csrf
 
             <div class="auth-field">
-                <label class="auth-label" for="name">Username</label>
+                <label class="auth-label" for="email">Email</label>
                 <input
-                    id="name"
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
+                    id="email"
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
                     required
                     autofocus
                     class="auth-input"
-                    autocomplete="username"
+                    autocomplete="email"
+                    placeholder="you@example.com"
                 >
-                @error('name')
+                @error('email')
                     <div class="auth-error">{{ $message }}</div>
                 @enderror
             </div>
@@ -310,8 +311,7 @@
             </a>
 
             <div class="auth-footer">
-                Don't have an account?
-                <a href="{{ route('register') }}">Create one here</a>
+                <span class="text-secondary/60">Accounts are managed by your administrator.</span>
             </div>
         </form>
     </div>

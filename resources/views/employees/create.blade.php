@@ -11,7 +11,7 @@
         {{-- Breadcrumbs & Title --}}
         <div class="mb-8">
             <nav class="flex text-secondary font-label-md mb-2">
-                <a class="hover:text-primary transition-colors" href="{{ route('employees.index') }}">Employees</a>
+                <a class="hover:text-primary transition-colors" href="{{ route('admin.employees.index') }}">Employees</a>
                 <span class="mx-2">/</span>
                 <span class="text-on-surface">Add New Employee</span>
             </nav>
@@ -51,7 +51,7 @@
         @endif
 
         {{-- Form: Step 1 of 2 --}}
-        <form action="{{ route('employees.create.store') }}" method="POST" enctype="multipart/form-data" class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden" id="employeeForm">
+        <form action="{{ route('admin.employees.create.store') }}" method="POST" enctype="multipart/form-data" class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden" id="employeeForm">
             @csrf
 
             <div class="p-8">
@@ -202,7 +202,7 @@
 
             {{-- Footer Actions --}}
             <div class="bg-surface-container-low px-8 py-6 flex justify-between items-center border-t border-outline-variant">
-                <a href="{{ route('employees.index') }}" class="px-6 py-2.5 rounded-lg border border-outline-variant text-secondary font-label-md hover:bg-surface-container-high transition-colors">
+                <a href="{{ route('admin.employees.index') }}" class="px-6 py-2.5 rounded-lg border border-outline-variant text-secondary font-label-md hover:bg-surface-container-high transition-colors">
                     Cancel
                 </a>
                 <button class="px-8 py-2.5 rounded-lg bg-primary text-white font-label-md hover:bg-primary-container transition-all flex items-center gap-2" type="submit">

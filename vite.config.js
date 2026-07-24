@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/leave-requests.js',
                 'resources/js/schedule.js',
+                'resources/js/payroll.js',
             ],
             refresh: true,
             fonts: [

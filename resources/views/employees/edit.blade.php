@@ -10,9 +10,9 @@
 
         {{-- Breadcrumbs --}}
         <nav class="flex items-center gap-2 mb-4 text-secondary font-label-md text-label-md">
-            <a class="hover:text-primary" href="{{ route('employees.index') }}">Employees</a>
+            <a class="hover:text-primary" href="{{ route('admin.employees.index') }}">Employees</a>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <a class="hover:text-primary" href="{{ route('employees.show', $employee) }}">{{ $employee->name }}</a>
+            <a class="hover:text-primary" href="{{ route('admin.employees.show', $employee) }}">{{ $employee->name }}</a>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             <span class="text-on-surface">Edit Profile</span>
         </nav>
@@ -28,7 +28,7 @@
             </div>
         @endif
 
-        <form action="{{ route('employees.update', $employee) }}" method="POST" enctype="multipart/form-data" id="editForm">
+        <form action="{{ route('admin.employees.update', $employee) }}" method="POST" enctype="multipart/form-data" id="editForm">
             @csrf
             @method('PUT')
 
@@ -46,7 +46,7 @@
                     <p class="text-secondary font-body-md text-body-md">{{ $employee->job_title }} • {{ $employee->department }}</p>
                 </div>
                 <div class="flex gap-3">
-                    <a href="{{ route('employees.show', $employee) }}" class="px-6 py-2 border border-outline-variant rounded font-label-md text-label-md text-secondary hover:bg-surface-container transition-colors">
+                    <a href="{{ route('admin.employees.show', $employee) }}" class="px-6 py-2 border border-outline-variant rounded font-label-md text-label-md text-secondary hover:bg-surface-container transition-colors">
                         Discard Changes
                     </a>
                     <button type="submit" class="px-6 py-2 bg-primary text-white rounded font-label-md text-label-md hover:bg-primary/90 shadow-sm transition-all transform active:scale-95">
@@ -248,12 +248,6 @@
                             </div>
 
                             <div class="space-y-1.5">
-                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="salary">Annual Salary ($)</label>
-                                <input class="w-full px-3 py-2 border @error('salary') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="salary" name="salary" type="number" min="0" step="0.01" value="{{ old('salary', $employee->salary) }}">
-                                @error('salary')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
-                            </div>
-
-                            <div class="space-y-1.5">
                                 <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="reporting_manager">Reporting Manager</label>
                                 @php $selectedManager = old('reporting_manager', $employee->reporting_manager); @endphp
                                 <select class="w-full px-3 py-2 border @error('reporting_manager') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="reporting_manager" name="reporting_manager">
@@ -300,12 +294,148 @@
                             </div>
                         </div>
                     </section>
+
+                    {{-- Fixed Working Hours --}}
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+                            <h3 class="font-title-lg text-title-lg">Fixed Working Hours &amp; Days</h3>
+                            <p class="font-body-sm text-secondary mt-1">Standard daily work schedule — displayed on the schedule timeline.</p>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="fixed_start_time">Start Time</label>
+                                <input
+                                    class="w-full px-3 py-2 border @error('fixed_start_time') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus"
+                                    id="fixed_start_time"
+                                    name="fixed_start_time"
+                                    type="time"
+                                    value="{{ old('fixed_start_time', $employee->fixed_start_time ?? '09:00') }}"
+                                >
+                                @error('fixed_start_time')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="fixed_end_time">End Time</label>
+                                <input
+                                    class="w-full px-3 py-2 border @error('fixed_end_time') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus"
+                                    id="fixed_end_time"
+                                    name="fixed_end_time"
+                                    type="time"
+                                    value="{{ old('fixed_end_time', $employee->fixed_end_time ?? '18:00') }}"
+                                >
+                                @error('fixed_end_time')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase block mb-3">Work Days</label>
+                            @php
+                                $dayLabels = ['Mon' => 'Mon', 'Tue' => 'Tue', 'Wed' => 'Wed', 'Thu' => 'Thu', 'Fri' => 'Fri', 'Sat' => 'Sat', 'Sun' => 'Sun'];
+                                $savedDays = is_array($employee->fixed_work_days) ? $employee->fixed_work_days : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                                $oldDays = old('fixed_work_days', $savedDays);
+                            @endphp
+                            <div class="flex flex-wrap gap-2">
+                                @foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $day)
+                                    <label class="relative flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 transition-all text-sm font-medium
+                                        {{ in_array($day, (array) $oldDays) ? 'border-primary bg-primary/5 text-primary' : 'border-outline-variant bg-white text-secondary hover:border-primary/40' }}">
+                                        <input
+                                            type="checkbox"
+                                            name="fixed_work_days[]"
+                                            value="{{ $day }}"
+                                            {{ in_array($day, (array) $oldDays) ? 'checked' : '' }}
+                                            class="sr-only"
+                                            onchange="this.parentElement.classList.toggle('border-primary'); this.parentElement.classList.toggle('bg-primary/5'); this.parentElement.classList.toggle('text-primary'); this.parentElement.classList.toggle('border-outline-variant'); this.parentElement.classList.toggle('bg-white'); this.parentElement.classList.toggle('text-secondary');"
+                                        >
+                                        {{ $dayLabels[$day] }}
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('fixed_work_days')<p class="font-body-sm text-error mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </section>
+
+                    {{-- Password Reset --}}
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+                            <h3 class="font-title-lg text-title-lg">Reset Password</h3>
+                            <p class="font-body-sm text-secondary mt-1">Leave blank to keep the current password.</p>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="password">New Password</label>
+                                <input class="w-full px-3 py-2 border @error('password') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="password" name="password" type="password" placeholder="Min. 8 characters">
+                                @error('password')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="password_confirmation">Confirm Password</label>
+                                <input class="w-full px-3 py-2 border @error('password_confirmation') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="password_confirmation" name="password_confirmation" type="password" placeholder="Repeat the password">
+                            </div>
+                        </div>
+                    </section>
+
+                    {{-- Payroll Compensation --}}
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+                            <h3 class="font-title-lg text-title-lg">Payroll Compensation</h3>
+                            <p class="font-body-sm text-secondary mt-1">Used when generating payroll from attendance and approved leave.</p>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            @php
+                                $selectedPayType = old('pay_type', $employee->pay_type ?? 'salary');
+                                $deductionPercent = old('deduction_percent', round(((float) ($employee->deduction_rate ?? 0.1)) * 100, 2));
+                            @endphp
+
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="pay_type">Pay Type</label>
+                                <select class="w-full px-3 py-2 border @error('pay_type') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="pay_type" name="pay_type" required>
+                                    @foreach ($payTypes as $type)
+                                        <option value="{{ $type }}" @selected($selectedPayType === $type)>{{ ucfirst($type) }}</option>
+                                    @endforeach
+                                </select>
+                                @error('pay_type')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="standard_hours">Standard Hours / Month</label>
+                                <input class="w-full px-3 py-2 border @error('standard_hours') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="standard_hours" name="standard_hours" type="number" min="1" max="744" value="{{ old('standard_hours', $employee->standard_hours ?? 160) }}" required>
+                                @error('standard_hours')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5" data-pay-field="salary">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="salary">Monthly Base Salary ($)</label>
+                                <input class="w-full px-3 py-2 border @error('salary') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="salary" name="salary" type="number" min="0" step="0.01" value="{{ old('salary', $employee->salary ?? $employee->base_salary) }}">
+                                @error('salary')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5 {{ $selectedPayType === 'hourly' ? '' : 'hidden' }}" data-pay-field="hourly">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="hourly_rate">Hourly Rate ($)</label>
+                                <input class="w-full px-3 py-2 border @error('hourly_rate') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="hourly_rate" name="hourly_rate" type="number" min="0" step="0.01" value="{{ old('hourly_rate', $employee->hourly_rate) }}">
+                                @error('hourly_rate')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="allowances">Monthly Allowances ($)</label>
+                                <input class="w-full px-3 py-2 border @error('allowances') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="allowances" name="allowances" type="number" min="0" step="0.01" value="{{ old('allowances', $employee->allowances ?? 0) }}">
+                                @error('allowances')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="deduction_percent">Deduction Rate (%)</label>
+                                <input class="w-full px-3 py-2 border @error('deduction_percent') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="deduction_percent" name="deduction_percent" type="number" min="0" max="100" step="0.01" value="{{ $deductionPercent }}">
+                                @error('deduction_percent')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase" for="fixed_deductions">Fixed Deductions ($)</label>
+                                <input class="w-full px-3 py-2 border @error('fixed_deductions') border-error @else border-outline-variant @enderror rounded font-body-md text-body-md input-focus" id="fixed_deductions" name="fixed_deductions" type="number" min="0" step="0.01" value="{{ old('fixed_deductions', $employee->fixed_deductions ?? 0) }}">
+                                @error('fixed_deductions')<p class="font-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
 
             {{-- Sticky Footer Action Bar --}}
             <div class="mt-12 mb-8 flex justify-end gap-4 border-t border-outline-variant pt-8 items-center">
-                <a href="{{ route('employees.show', $employee) }}" class="px-8 py-2.5 border border-outline-variant rounded font-label-md text-label-md text-secondary hover:bg-surface-container transition-colors">
+                <a href="{{ route('admin.employees.show', $employee) }}" class="px-8 py-2.5 border border-outline-variant rounded font-label-md text-label-md text-secondary hover:bg-surface-container transition-colors">
                     Discard Changes
                 </a>
                 <button type="submit" class="px-10 py-2.5 bg-primary text-white rounded font-label-md text-label-md hover:bg-primary/90 shadow-lg transition-all transform active:scale-95 flex items-center gap-2">
@@ -326,7 +456,7 @@
     const preview = document.getElementById('avatarPreview');
     const placeholder = document.getElementById('avatarPlaceholder');
 
-    avatarInput.addEventListener('change', () => {
+    avatarInput?.addEventListener('change', () => {
         const file = avatarInput.files && avatarInput.files[0];
         if (file) {
             const reader = new FileReader();
@@ -338,5 +468,25 @@
             reader.readAsDataURL(file);
         }
     });
+
+    (function () {
+        const payType = document.getElementById('pay_type');
+        if (!payType) return;
+
+        const syncPayFields = () => {
+            const isHourly = payType.value === 'hourly';
+            document.querySelectorAll('[data-pay-field="salary"]').forEach((el) => {
+                el.classList.toggle('hidden', isHourly);
+                el.querySelector('input')?.toggleAttribute('required', !isHourly);
+            });
+            document.querySelectorAll('[data-pay-field="hourly"]').forEach((el) => {
+                el.classList.toggle('hidden', !isHourly);
+                el.querySelector('input')?.toggleAttribute('required', isHourly);
+            });
+        };
+
+        payType.addEventListener('change', syncPayFields);
+        syncPayFields();
+    })();
 </script>
 @endpush
