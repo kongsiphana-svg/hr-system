@@ -313,6 +313,7 @@ class EmployeeDashboardController extends Controller
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $request->email,
+                'avatar_url' => $user->avatar ?? $employee->avatar_url,
             ]);
         }
 
