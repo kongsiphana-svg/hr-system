@@ -48,8 +48,8 @@
         {{-- Summary Card --}}
         <section class="relative mb-8 rounded-xl border border-gray-200 bg-white p-8">
             <div class="absolute top-8 right-8">
-                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-600">
-                    {{ $todayCount > 0 ? 'Active' : 'Quiet' }}
+                <span class="rounded-full {{ $todayCount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500' }} px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                    {{ $todayCount > 0 ? 'Active Today' : 'No Shifts Today' }}
                 </span>
             </div>
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
@@ -144,9 +144,19 @@
                         <tr class="transition-colors {{ $isConflict ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50' }}" data-schedule-id="{{ $schedule->id }}">
                             <td class="px-6 py-4 {{ $isConflict ? 'border-l-4 border-red-500' : '' }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold {{ $avatarClass }}">
-                                        {{ $employee?->initials() ?? '?' }}
-                                    </div>
+                                    {{-- Employee Avatar / Profile Picture --}}
+                                    @if (!empty($employee?->avatar_url))
+                                        <img 
+                                            src="{{ $employee->avatar_url }}" 
+                                            alt="{{ $employee->name }}" 
+                                            class="h-10 w-10 shrink-0 rounded-full object-cover border border-slate-200 shadow-sm"
+                                        >
+                                    @else
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold {{ $avatarClass }}">
+                                            {{ $employee?->initials() ?? '?' }}
+                                        </div>
+                                    @endif
+
                                     <div>
                                         <p class="text-sm font-bold text-slate-800">{{ $employee?->name ?? 'Unknown employee' }}</p>
                                         <p class="text-xs text-slate-500">{{ $employee?->email ?? '—' }}</p>

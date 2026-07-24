@@ -10,44 +10,49 @@ use Illuminate\Validation\Rule;
 
 class ScheduleController extends Controller
 {
-    public function pageIndex(Request $request)
-    {
-        $weekStart = $this->resolveWeekStart($request->query('week'));
-        $weekEnd = $weekStart->copy()->addDays(6);
+   public function pageIndex(Request $request)
+{
+    $weekStart = $this->resolveWeekStart($request->query('week'));
+    $weekEnd = $weekStart->copy()->addDays(6);
 
-        $query = Schedule::with('employee')
-            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->orderBy('date')
-            ->orderBy('start_time');
+    $query = Schedule::with('employee')
+        ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+        ->orderBy('date')
+        ->orderBy('start_time');
 
-        if ($department = $request->query('department')) {
-            $query->whereHas('employee', fn ($q) => $q->where('department', $department));
-        }
-
-        $schedules = $query->paginate(10)->withQueryString();
-
-        $todayCount = Schedule::whereDate('date', now()->toDateString())->count();
-
-        $departments = Employee::query()
-            ->whereNotNull('department')
-            ->where('department', '!=', '')
-            ->distinct()
-            ->orderBy('department')
-            ->pluck('department');
-
-        $employees = Employee::orderBy('first_name')->orderBy('last_name')->get();
-
-        return view('Schedule.index', [
-            'schedules' => $schedules,
-            'weekStart' => $weekStart,
-            'weekEnd' => $weekEnd,
-            'todayCount' => $todayCount,
-            'departments' => $departments,
-            'employees' => $employees,
-            'selectedDepartment' => $department,
-        ]);
+    if ($department = $request->query('department')) {
+        $query->whereHas('employee', fn ($q) => $q->where('department', $department));
     }
 
+    $schedules = $query->paginate(10)->withQueryString();
+
+    $todayDate = Carbon::now(config('app.timezone', 'Asia/Phnom_Penh'))->toDateString();
+
+    $todayCount = Schedule::where(function ($q) use ($todayDate) {
+            $q->whereDate('date', $todayDate)
+              ->orWhere('date', 'like', $todayDate . '%');
+        })
+        ->count();
+
+    $departments = Employee::query()
+        ->whereNotNull('department')
+        ->where('department', '!=', '')
+        ->distinct()
+        ->orderBy('department')
+        ->pluck('department');
+
+    $employees = Employee::orderBy('first_name')->orderBy('last_name')->get();
+
+    return view('Schedule.index', [
+        'schedules' => $schedules,
+        'weekStart' => $weekStart,
+        'weekEnd' => $weekEnd,
+        'todayCount' => $todayCount,
+        'departments' => $departments,
+        'employees' => $employees,
+        'selectedDepartment' => $department,
+    ]);
+}
     public function pageCalendar(Request $request)
     {
         $weekStart = $this->resolveWeekStart($request->query('week'));
@@ -148,7 +153,7 @@ class ScheduleController extends Controller
         }
 
         return redirect()
-            ->route('schedule.index', ['week' => $schedule->date->toDateString()])
+            ->route('schedule.index', ['week' => Carbon::parse($schedule->date)->toDateString()])
             ->with('success', 'Shift created successfully.');
     }
 

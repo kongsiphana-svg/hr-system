@@ -46,6 +46,9 @@ Route::get('/payroll', [PayrollPageController::class, 'index'])->name('payroll.i
 Route::get('/payroll/process', function () {
     return view('Payroll.process');
 })->name('payroll.process');
+Route::delete('/payroll/{id}/reset', [PayrollPageController::class, 'reset'])->name('payroll.reset');
+Route::post('/payroll/process/{employeeId}', [PayrollPageController::class, 'storeProcess'])
+    ->name('payroll.process.store');
 
 // Schedule (UI)
 Route::get('/schedule', [ScheduleController::class, 'pageIndex'])->name('schedule.index');
