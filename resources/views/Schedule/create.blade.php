@@ -148,14 +148,11 @@
                             </select>
                         </div>
                         <div>
-                            <label for="notes" class="mb-2 block text-sm font-semibold text-gray-700">Additional Notes</label>
-                            <textarea
-                                id="notes"
-                                name="notes"
-                                rows="4"
-                                placeholder="Enter any specific instructions or handover notes for this shift..."
-                                class="block w-full rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >{{ old('notes') }}</textarea>
+                            <label class="mb-2 block text-sm font-semibold text-gray-700">Additional Notes</label>
+                            <div class="rounded-lg border border-gray-300 overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all">
+                                <div id="create-notes-editor" class="min-h-[150px]"></div>
+                            </div>
+                            <textarea name="notes" id="create-notes" class="hidden">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -188,6 +185,8 @@
 @endsection
 
 @push('scripts')
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 <script>
     document.getElementById('shift_type')?.addEventListener('change', function () {
         const start = document.getElementById('start_time');
@@ -200,6 +199,38 @@
         } else if (this.value === 'night') {
             start.value = '22:00';
             end.value = '06:00';
+        }
+    });
+
+    // ── Quill Rich Text Editor for Notes ──
+    document.addEventListener('DOMContentLoaded', function () {
+        const editorEl = document.getElementById('create-notes-editor');
+        const hiddenInput = document.getElementById('create-notes');
+        const form = document.getElementById('create-shift-form');
+
+        if (editorEl && hiddenInput && form) {
+            const quill = new Quill(editorEl, {
+                theme: 'snow',
+                placeholder: 'Enter any specific instructions or handover notes for this shift...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Restore previous value from validation
+            if (hiddenInput.value) {
+                quill.root.innerHTML = hiddenInput.value;
+            }
+
+            // Sync before submit
+            form.addEventListener('submit', function () {
+                hiddenInput.value = quill.root.innerHTML;
+            });
         }
     });
 </script>

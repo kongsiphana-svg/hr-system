@@ -64,7 +64,7 @@
                         @if ($leave->reason)
                         <tr class="bg-surface-container-low/30">
                             <td colspan="5" class="px-5 py-2 font-body-sm text-body-sm text-secondary italic">
-                                Note: {{ $leave->reason }}
+                                Note: {!! $leave->reason !!}
                             </td>
                         </tr>
                         @endif

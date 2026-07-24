@@ -15,8 +15,8 @@
         id="schedule-app"
         class="min-h-[calc(100vh-4rem)]"
         data-csrf="{{ csrf_token() }}"
-        data-create-url="{{ url('/schedules') }}"
-        data-list-url="{{ url('/schedules') }}"
+        data-create-url="{{ route('admin.schedules.store') }}"
+        data-list-url="{{ route('admin.schedules.index') }}"
     >
         {{-- Sub-nav for schedule pages --}}
         <div class="border-b border-outline-variant bg-surface px-6 lg:px-8">

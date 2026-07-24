@@ -122,7 +122,7 @@
                                 <div class="flex h-full flex-col justify-center rounded-r-md border-l-4 p-1.5 {{ $shiftColors[$shift['color']] ?? $shiftColors['blue'] }} shadow-sm">
                                     <span class="text-[9px] font-bold leading-tight">{{ $shift['start'] }} - {{ $shift['end'] }}</span>
                                     @if ($shift['note'])
-                                        <span class="text-[7px] font-medium text-orange-600 leading-tight mt-0.5">{{ \Illuminate\Support\Str::limit($shift['note'], 20) }}</span>
+                                        <span class="text-[7px] font-medium text-orange-600 leading-tight mt-0.5">{{ \Illuminate\Support\Str::limit(strip_tags($shift['note']), 20) }}</span>
                                     @endif
                                 </div>
                             @endif

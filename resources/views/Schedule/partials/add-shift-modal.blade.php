@@ -103,6 +103,15 @@
                 </div>
             </div>
 
+            {{-- Notes with Quill Rich Text Editor --}}
+            <div>
+                <label for="modal-notes-editor" class="mb-2 block text-xs font-bold text-slate-700">Additional Notes</label>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                    <div id="modal-notes-editor" class="min-h-[100px] text-sm"></div>
+                </div>
+                <textarea name="notes" id="modal-notes" class="hidden"></textarea>
+            </div>
+
             <p data-shift-form-error class="hidden text-xs font-medium text-red-600"></p>
         </form>
 
@@ -121,6 +130,41 @@
             >
                 Create Shift
             </button>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const editorEl = document.getElementById('modal-notes-editor');
+    const hiddenInput = document.getElementById('modal-notes');
+    const form = document.getElementById('add-shift-form');
+
+    if (editorEl && hiddenInput && form) {
+        const quill = new Quill(editorEl, {
+            theme: 'snow',
+            placeholder: 'Enter shift notes, instructions, or handover details...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Sync Quill content to hidden textarea before form submit
+        form.addEventListener('submit', function () {
+            hiddenInput.value = quill.root.innerHTML;
+        });
+    }
+});
+</script>
+@endpush
         </div>
     </div>
 </div>

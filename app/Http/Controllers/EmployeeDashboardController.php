@@ -10,7 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class EmployeeDashboardController extends Controller
@@ -216,7 +215,7 @@ class EmployeeDashboardController extends Controller
                 ->get();
 
             foreach ($shifts as $schedule) {
-                $dayIndex = $weekStart->diffInDays(Carbon::parse($schedule->date)->startOfDay());
+                $dayIndex = (int) $weekStart->diffInDays(Carbon::parse($schedule->date)->startOfDay());
                 $employeeShifts[$dayIndex] = [
                     'id' => $schedule->id,
                     'start' => $schedule->start_time_formatted,
@@ -292,6 +291,9 @@ class EmployeeDashboardController extends Controller
             $user->avatar = $this->storeAvatar($request->file('avatar'));
         }
 
+        // ── Get employee BEFORE changing the email so the relation still resolves ──
+        $employee = $user->employee;
+
         $user->name = $request->name;
         $user->email = $request->email;
 
@@ -300,6 +302,19 @@ class EmployeeDashboardController extends Controller
         }
 
         $user->save();
+
+        // ── Sync changes to the linked Employee record ──
+        if ($employee) {
+            $nameParts = preg_split('/\s+/', trim($request->name), 2);
+            $firstName = $nameParts[0] ?? $request->name;
+            $lastName = $nameParts[1] ?? '';
+
+            $employee->update([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $request->email,
+            ]);
+        }
 
         return redirect()
             ->route('employee.settings')

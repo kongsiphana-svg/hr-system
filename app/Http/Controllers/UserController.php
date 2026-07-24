@@ -11,7 +11,7 @@ class UserController extends Controller
     public function index()
     {
         // Eager load posts count for the index table
-        $users = User::withCount('posts')->paginate(10);
+        $users = User::paginate(10);
         return view('users.index', compact('users'));
     }
 

@@ -153,7 +153,6 @@
                         <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Hours</th>
                         <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Fixed Schedule</th>
                         <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Fixed/Week</th>
-                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Progress</th>
                         <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
                         <th class="px-6 py-4"></th>
                     </tr>
@@ -222,22 +221,6 @@
                                     {{ $stdWeek > 0 ? number_format($stdWeek, 1).'h' : '—' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                @if ($stdWeek > 0)
-                                    @php
-                                        $percent = min(100, round(($schedWeek / $stdWeek) * 100));
-                                        $barColor = $percent >= 100 ? 'bg-emerald-500' : ($percent >= 75 ? 'bg-blue-500' : ($percent >= 50 ? 'bg-amber-500' : 'bg-slate-300'));
-                                    @endphp
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-full max-w-[80px] h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full {{ $barColor }} transition-all" style="width: {{ $percent }}%"></div>
-                                        </div>
-                                        <span class="text-xs font-medium {{ $percent >= 100 ? 'text-emerald-600' : 'text-slate-500' }}">{{ $percent }}%</span>
-                                    </div>
-                                @else
-                                    <span class="text-xs text-slate-400">—</span>
-                                @endif
-                            </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold {{ $statusStyles[$status] ?? $statusStyles['scheduled'] }}">
                                     <span class="h-1.5 w-1.5 rounded-full {{ $status === 'clocked_in' ? 'bg-emerald-500' : 'bg-indigo-500' }}"></span>
@@ -258,7 +241,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-12 text-center text-sm text-slate-500">
+                            <td colspan="9" class="px-6 py-12 text-center text-sm text-slate-500">
                                 No shifts scheduled for this week.
                                 <a href="{{ route('admin.schedule.create') }}" class="font-semibold text-indigo-700 hover:underline">Add a shift</a>
                             </td>

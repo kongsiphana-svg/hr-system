@@ -63,6 +63,9 @@ class LeaveRequestController extends Controller
             return redirect()->route('login')->withErrors(['name' => 'Please log in to submit a leave request.']);
         }
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $data = $request->validate([
             'leave_type' => ['required', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
@@ -70,7 +73,7 @@ class LeaveRequestController extends Controller
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        Auth::user()->leaveRequests()->create([
+        $user->leaveRequests()->create([
             'leave_type' => $data['leave_type'],
             'start_date' => $data['start_date'],
             'end_date' => $data['end_date'],
@@ -79,7 +82,7 @@ class LeaveRequestController extends Controller
         ]);
 
         return redirect()
-            ->route('leave-requests.index')
+            ->route('admin.leave-requests.index')
             ->with('success', 'Leave request submitted successfully.');
     }
 
@@ -99,7 +102,7 @@ class LeaveRequestController extends Controller
         $leave->update(['status' => $status]);
 
         return redirect()
-            ->route('leave-requests.index')
+            ->route('admin.leave-requests.index')
             ->with('success', "Leave status updated to {$status}.");
     }
 

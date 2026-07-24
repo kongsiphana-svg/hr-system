@@ -121,7 +121,7 @@ class ScheduleController extends Controller
             $shifts = [];
 
             foreach ($schedules->where('employee_id', $employee->id) as $schedule) {
-                $dayIndex = $weekStart->diffInDays(Carbon::parse($schedule->date)->startOfDay());
+                $dayIndex = (int) $weekStart->diffInDays(Carbon::parse($schedule->date)->startOfDay());
                 $shifts[$dayIndex] = [
                     'id' => $schedule->id,
                     'start' => $schedule->start_time_formatted,

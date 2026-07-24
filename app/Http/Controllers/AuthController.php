@@ -15,7 +15,10 @@ class AuthController extends Controller
      */
     protected function redirectHome(): string
     {
-        if (Auth::check() && Auth::user()->isEmployee()) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user && $user->isEmployee()) {
             return route('employee.dashboard');
         }
 
@@ -65,13 +68,18 @@ class AuthController extends Controller
 
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+        $provider = Socialite::driver('google');
+
+        return $provider->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+            $provider = Socialite::driver('google');
+            $googleUser = $provider->stateless()->user();
         } catch (\Throwable $e) {
             return redirect()
                 ->route('login')

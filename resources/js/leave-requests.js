@@ -26,7 +26,7 @@ const updateDetails = (row) => {
     }
 
     detailsTitle.textContent = `Request Details: ${row.dataset.employee}`;
-    detailsNote.textContent = `“${row.dataset.note}”`;
+    detailsNote.innerHTML = `“${row.dataset.note}”`;
 
     if (detailsActions) {
         detailsActions.hidden = row.dataset.status !== 'pending';

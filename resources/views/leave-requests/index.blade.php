@@ -132,7 +132,7 @@
                 <h2 class="details-title" id="request-details-title" data-leave-details-title>
                     Request Details: {{ $selectedRequest['employee'] ?? '' }}
                 </h2>
-                <blockquote class="details-note" data-leave-details-note>“{{ $selectedRequest['note'] ?? '' }}”</blockquote>
+                <blockquote class="details-note" data-leave-details-note>“{!! $selectedRequest['note'] ?? '' !!}”</blockquote>
                 <div class="details-actions" data-leave-details-actions @if(($selectedRequest['status'] ?? '') !== 'pending') hidden @endif>
                     <form action="{{ route('admin.leaves.status', ['id' => $selectedRequest['id'] ?? 0, 'status' => 'Rejected']) }}" method="POST">
                         @csrf
